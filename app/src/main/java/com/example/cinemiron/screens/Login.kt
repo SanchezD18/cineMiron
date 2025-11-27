@@ -24,20 +24,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 @Composable
-fun LoginScreen() {
-    // Usuario y Contraseña
+fun LoginScreen(navController: NavController, modifier: Modifier) {
     var usernameText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
-
-    // habilitar boton
     val isButtonEnabled by remember {
         derivedStateOf {
             usernameText.isNotBlank() && passwordText.isNotBlank()
         }
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -75,12 +72,12 @@ fun LoginScreen() {
 
         Button(
             onClick = {
-                println("Iniciando sesión con usuario: $usernameText")
+                navController.navigate("home")
             },
             enabled = isButtonEnabled,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                // Colores personalizados cuando está DESHABILITADO
+
                 disabledContainerColor = Color(0xFFCCCCCC),
                 disabledContentColor = Color(0xFF666666)
 
@@ -91,11 +88,11 @@ fun LoginScreen() {
         Spacer(modifier = Modifier.height(10.dp))
         Button(
             onClick = {
-                println("Iniciando sesión con usuario: $usernameText")
+                navController.navigate("register")
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                // Colores personalizados cuando está DESHABILITADO
+
                 disabledContainerColor = Color(0xFFCCCCCC),
                 disabledContentColor = Color(0xFF666666)
 
@@ -106,11 +103,6 @@ fun LoginScreen() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewLoginScreen() {
-    LoginScreen()
-}
 
 @Composable
 fun CheckboxMinimalExample() {
@@ -131,4 +123,3 @@ fun CheckboxMinimalExample() {
         )
     }
 }
-

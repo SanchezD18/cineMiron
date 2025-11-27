@@ -33,10 +33,11 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterScreen(
+fun RegisterScreen(navController: NavController,
     modifier: Modifier = Modifier
 ) {
     var username by remember { mutableStateOf("") }
@@ -44,10 +45,9 @@ fun RegisterScreen(
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
-    //var confirmPasswordVisible by remember { mutableStateOf(false) }
+    var confirmPasswordVisible by remember { mutableStateOf(false) }
     var passwordsMatch by remember { mutableStateOf(true) }
 
-    // Validar que las contraseñas coincidan
     LaunchedEffect(password, confirmPassword) {
         passwordsMatch = password == confirmPassword || confirmPassword.isEmpty()
     }
@@ -136,32 +136,30 @@ fun RegisterScreen(
         )
 
         OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
+            value = confirmPassword,
+            onValueChange = { confirmPassword = it },
             label = { Text("Confirmar Contraseña") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             singleLine = true,
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                     Icon(
-                        imageVector = if (passwordVisible) Icons.Filled.Info else Icons.Filled.Info,
-                        contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                        imageVector = if (confirmPasswordVisible) Icons.Filled.Info else Icons.Filled.Info,
+                        contentDescription = if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña"
                     )
                 }
             }
         )
 
-        // Botón de Registrarse
         Button(
             onClick = {
-                // Simulación: navegar directamente a la pantalla principal
-                /*navController.navigate("main") {
+                navController.navigate("home") {
                     popUpTo("login") { inclusive = true }
-                }*/
+                }
             },
             modifier = Modifier
                 .fillMaxWidth()
@@ -183,5 +181,3 @@ fun RegisterScreen(
 
     }
 }
-
-
