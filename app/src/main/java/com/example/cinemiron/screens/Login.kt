@@ -24,17 +24,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 
 @Composable
-fun LoginScreen(navController: NavController, modifier: Modifier) {
+fun LoginScreen() {
+    // Usuario y Contraseña
     var usernameText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
+
+    // habilitar boton
     val isButtonEnabled by remember {
         derivedStateOf {
             usernameText.isNotBlank() && passwordText.isNotBlank()
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -72,12 +75,12 @@ fun LoginScreen(navController: NavController, modifier: Modifier) {
 
         Button(
             onClick = {
-                navController.navigate("home")
+                println("Iniciando sesión con usuario: $usernameText")
             },
             enabled = isButtonEnabled,
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-
+                // Colores personalizados cuando está DESHABILITADO
                 disabledContainerColor = Color(0xFFCCCCCC),
                 disabledContentColor = Color(0xFF666666)
 
@@ -88,11 +91,11 @@ fun LoginScreen(navController: NavController, modifier: Modifier) {
         Spacer(modifier = Modifier.height(10.dp))
         Button(
             onClick = {
-                navController.navigate("register")
+                println("Iniciando sesión con usuario: $usernameText")
             },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-
+                // Colores personalizados cuando está DESHABILITADO
                 disabledContainerColor = Color(0xFFCCCCCC),
                 disabledContentColor = Color(0xFF666666)
 
@@ -103,6 +106,11 @@ fun LoginScreen(navController: NavController, modifier: Modifier) {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun PreviewLoginScreen() {
+    LoginScreen()
+}
 
 @Composable
 fun CheckboxMinimalExample() {
@@ -123,3 +131,4 @@ fun CheckboxMinimalExample() {
         )
     }
 }
+

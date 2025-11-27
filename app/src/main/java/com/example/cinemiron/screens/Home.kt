@@ -12,9 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -27,12 +25,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
 import com.example.cinemiron.R
 
 
 @Composable
-fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
+fun HomeScreen(modifier: Modifier = Modifier) {
     HomeAppBar(modifier)
 }
 
@@ -40,7 +37,23 @@ fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
 @Composable
 fun HomeAppBar(modifier: Modifier = Modifier) {
     Scaffold(
-        modifier = modifier
+        modifier = modifier,
+        topBar = {
+            TopAppBar(
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                ),
+                modifier = Modifier
+                    .height(60.dp),
+                title = {
+                    Text(
+                        "CineMirón",
+                        style = MaterialTheme.typography.headlineLarge
+                    )
+                }
+            )
+        }
     ) { innerPadding ->
         ScrollContent(innerPadding)
     }
@@ -48,7 +61,7 @@ fun HomeAppBar(modifier: Modifier = Modifier) {
 
 @Composable
 fun ScrollContent(innerPadding: PaddingValues) {
-    val scrollState = rememberScrollState()
+
     val images = listOf(
         R.drawable.fatum,
         R.drawable.titanic,
@@ -63,7 +76,6 @@ fun ScrollContent(innerPadding: PaddingValues) {
             .padding(innerPadding)
             .fillMaxSize()
             .padding(16.dp)
-            .verticalScroll(scrollState)
     ) {
         Text(
             text = "Ultimas Vistas",
@@ -108,3 +120,4 @@ fun ImageRow(images: List<Int>) {
         }
     }
 }
+
