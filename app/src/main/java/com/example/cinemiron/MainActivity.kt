@@ -26,7 +26,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.cinemiron.components.BottomNavBar
-import com.example.cinemiron.screens.FimlInfo
+import com.example.cinemiron.screens.FilmInfo
 import com.example.cinemiron.screens.HomeScreen
 import com.example.cinemiron.screens.LoginScreen
 import com.example.cinemiron.screens.Profile
@@ -124,7 +124,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("filminfo") {
-                            FimlInfo(
+                            FilmInfo(
                                 navController,
                                 modifier = Modifier.padding(innerPadding)
                             )
