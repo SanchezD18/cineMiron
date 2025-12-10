@@ -1,4 +1,4 @@
-package com.example.cinemiron.components
+package com.example.cinemiron.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape

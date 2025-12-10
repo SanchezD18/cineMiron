@@ -1,4 +1,4 @@
-package com.example.cinemiron.screens
+package com.example.cinemiron.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable

@@ -1,7 +1,6 @@
-package com.example.mywhatsapp.repository
+package com.example.cinemiron.data
 
 import com.example.cinemiron.R
-import com.example.mywhatsapp.data.Pelis
 
 object PelisRepository {
 
@@ -35,8 +34,8 @@ object PelisRepository {
         ),
         Pelis(
             id = 5,
-            name = "Prueba",
-            photo = R.drawable.prueba,
+            name = "El Corredor del Laberinto",
+            photo = R.drawable.gladiator,
             contentDescription = null,
             sinopsis = "Un drama intenso que sigue a un personaje que debe enfrentarse a una serie de desafíos extremos que pondrán a prueba sus límites físicos, mentales y emocionales, revelando su verdadera naturaleza."
         ),

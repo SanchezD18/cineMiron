@@ -19,30 +19,40 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.cinemiron.components.BottomNavBar
-import com.example.cinemiron.screens.FilmInfo
-import com.example.cinemiron.screens.HomeScreen
-import com.example.cinemiron.screens.LoginScreen
-import com.example.cinemiron.screens.ProfileScreen
-import com.example.cinemiron.screens.RegisterScreen
-import com.example.cinemiron.screens.ReviewScreen
-import com.example.cinemiron.screens.SearchScreen
-import com.example.pruebas_apis.ui.theme.CineMironTheme
+import com.example.cinemiron.ui.components.BottomNavBar
+import com.example.cinemiron.ui.components.SettingsDialog
+import com.example.cinemiron.ui.screens.FilmInfo
+import com.example.cinemiron.ui.screens.HomeScreen
+import com.example.cinemiron.ui.screens.LoginScreen
+import com.example.cinemiron.ui.screens.ProfileScreen
+import com.example.cinemiron.ui.screens.RegisterScreen
+import com.example.cinemiron.ui.screens.ReviewScreen
+import com.example.cinemiron.ui.screens.SearchScreen
+import com.example.cinemiron.ui.theme.CineMironTheme
+import com.example.cinemiron.ui.theme.ColorSchemeOption
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+
 
 
 class MainActivity : ComponentActivity() {
+    private lateinit var auth: FirebaseAuth
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        auth = Firebase.auth
         enableEdgeToEdge()
         setContent {
-            CineMironTheme {
                 val routeTitles = mapOf(
                     "home" to "Inicio",
                     "search" to "Buscar",
@@ -59,7 +69,14 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = navBackStackEntry?.destination?.route
                 val currentTitle = routeTitles[currentRoute] ?: "cineMirón"
                 val hiddenRoutes = listOf("login", "register")
+                var showSettingsDialog by remember { mutableStateOf(false) }
+                var isDarkTheme by remember { mutableStateOf(false) }
+                var selectedColorScheme by remember { mutableStateOf(ColorSchemeOption.VERDE) }
 
+                CineMironTheme(
+                    darkTheme = isDarkTheme,
+                    colorSchemeOption = selectedColorScheme
+                ) {
                 Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
                         TopAppBar(
@@ -70,15 +87,28 @@ class MainActivity : ComponentActivity() {
                                 Text(currentTitle)
                                     if (!hiddenRoutes.contains(currentRoute)) {
                                     IconButton(
-                                    onClick = { /*TODO*/ }
+                                    onClick = {showSettingsDialog = true}
                                 ) {
                                     Icon(
                                         imageVector = Icons.Filled.Settings,
                                         contentDescription = "Configuración",
                                         tint = MaterialTheme.colorScheme.primary
                                     )
-                                } }} },
-
+                                } }}
+                                if (showSettingsDialog) {
+                                    SettingsDialog(
+                                        onDismiss = { showSettingsDialog = false },
+                                        initialDarkTheme = isDarkTheme,
+                                        initialColorScheme = selectedColorScheme,
+                                        onThemeChanged = { newValue ->
+                                            isDarkTheme = newValue
+                                        },
+                                        onColorSchemeChanged = { newScheme ->
+                                            selectedColorScheme = newScheme
+                                        }
+                                    )
+                                }
+                                    },
                         )
                     },
                     bottomBar = {
@@ -98,13 +128,15 @@ class MainActivity : ComponentActivity() {
                         composable("login") {
                             LoginScreen(
                                 navController,
-                                modifier = Modifier.padding(innerPadding)
+                                modifier = Modifier.padding(innerPadding),
+                                auth = auth
                             )
                         }
                         composable("register") {
                             RegisterScreen(
                                 navController,
-                                modifier = Modifier.padding(innerPadding)
+                                modifier = Modifier.padding(innerPadding),
+                                auth
                             )
                         }
                         composable("home") {
@@ -145,8 +177,8 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 }
+                }
             }
         }
-    }
 }
 

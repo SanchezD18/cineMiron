@@ -1,4 +1,4 @@
-package com.example.cinemiron.screens
+package com.example.cinemiron.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,8 +25,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.mywhatsapp.repository.PelisRepository
-import com.example.mywhatsapp.ui.components.CardPelis
+import com.example.cinemiron.data.PelisRepository
+import com.example.cinemiron.ui.components.CardPelis
 
 @Composable
 fun SearchScreen(navController: NavController, modifier: Modifier = Modifier) {

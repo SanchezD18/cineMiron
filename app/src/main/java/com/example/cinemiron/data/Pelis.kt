@@ -1,4 +1,4 @@
-package com.example.mywhatsapp.data
+package com.example.cinemiron.data
 
 data class Pelis(
     val id: Int,
