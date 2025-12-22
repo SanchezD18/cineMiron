@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
@@ -27,6 +28,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -57,7 +60,8 @@ fun SettingsDialog(
     onThemeChanged: ((Boolean) -> Unit)? = null,
     onColorSchemeChanged: ((ColorSchemeOption) -> Unit)? = null,
     onNotificationsChanged: ((Boolean) -> Unit)? = null,
-    onProfileChanged: ((Boolean) -> Unit)? = null
+    onProfileChanged: ((Boolean) -> Unit)? = null,
+    onLogout: (() -> Unit)? = null
 ) {
     var isDarkTheme by remember { mutableStateOf(initialDarkTheme) }
     var selectedColorScheme by remember { mutableStateOf(initialColorScheme) }
@@ -121,28 +125,12 @@ fun SettingsDialog(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-                SettingItem(
-                    icon = Icons.Filled.AccountCircle,
-                    title = "Perfil público",
-                    subtitle = if (isPublicProfile) "Visible para todos" else "Privado",
-                    checked = isPublicProfile,
-                    onCheckedChange = { newValue ->
-                        if (newValue) {
-                            isPublicProfile = true
-                            onProfileChanged?.invoke(true)
-                        } else {
-                            isPublicProfile = false
-                            onProfileChanged?.invoke(false)
+                onLogout?.let {
+                    LogoutButton(
+                        onClick = {
+                            onDismiss()
+                            it()
                         }
-                    }
-                )
-
-                if (isPublicProfile) {
-                    Text(
-                        text = "⚠️ Tu perfil será visible para todos los usuarios",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.error,
-                        modifier = Modifier.padding(top = 8.dp)
                     )
                 }
             }
@@ -315,6 +303,30 @@ private fun getColorSchemePreviewColor(scheme: ColorSchemeOption): Color {
         ColorSchemeOption.ROJO -> Color(0xFFC62828)
         ColorSchemeOption.NARANJA -> Color(0xFFF57C00)
         ColorSchemeOption.TEAL -> Color(0xFF00695C)
+    }
+}
+
+@Composable
+fun LogoutButton(
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.error,
+            contentColor = MaterialTheme.colorScheme.onError
+        )
+    ) {
+        Icon(
+            imageVector = Icons.Filled.ExitToApp,
+            contentDescription = null,
+            modifier = Modifier.size(20.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Cerrar sesión")
     }
 }
 

@@ -35,6 +35,7 @@ import com.example.cinemiron.ui.screens.HomeScreen
 import com.example.cinemiron.ui.screens.LoginScreen
 import com.example.cinemiron.ui.screens.ProfileScreen
 import com.example.cinemiron.ui.screens.RegisterScreen
+import com.example.cinemiron.ui.screens.ResetPassword
 import com.example.cinemiron.ui.screens.ReviewScreen
 import com.example.cinemiron.ui.screens.SearchScreen
 import com.example.cinemiron.ui.theme.CineMironTheme
@@ -68,7 +69,7 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 val currentTitle = routeTitles[currentRoute] ?: "cineMirón"
-                val hiddenRoutes = listOf("login", "register")
+                val hiddenRoutes = listOf("login", "register", "resetpassword")
                 var showSettingsDialog by remember { mutableStateOf(false) }
                 var isDarkTheme by remember { mutableStateOf(false) }
                 var selectedColorScheme by remember { mutableStateOf(ColorSchemeOption.VERDE) }
@@ -105,6 +106,12 @@ class MainActivity : ComponentActivity() {
                                         },
                                         onColorSchemeChanged = { newScheme ->
                                             selectedColorScheme = newScheme
+                                        },
+                                        onLogout = {
+                                            auth.signOut()
+                                            navController.navigate("login") {
+                                                popUpTo(0) { inclusive = true }
+                                            }
                                         }
                                     )
                                 }
@@ -139,6 +146,13 @@ class MainActivity : ComponentActivity() {
                                 auth
                             )
                         }
+                        composable("resetpassword") {
+                            ResetPassword(
+                                navController,
+                                modifier = Modifier.padding(innerPadding),
+                                auth
+                            )
+                        }
                         composable("home") {
                             HomeScreen(
                                 navController,
@@ -149,13 +163,6 @@ class MainActivity : ComponentActivity() {
                             SearchScreen(
                                 navController,
                                 modifier = Modifier.padding(innerPadding)
-                            )
-                        }
-                        composable("popular") {
-                            ProfileScreen(
-                                navController,
-                                modifier = Modifier.padding(innerPadding),
-                                auth = auth
                             )
                         }
                         composable("filminfo") {

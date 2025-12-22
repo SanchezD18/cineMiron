@@ -130,7 +130,7 @@ fun LoginScreen(
             },
             enabled = !isLoading
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -143,12 +143,21 @@ fun LoginScreen(
                 enabled = !isLoading
             )
             Text(
-                text = "Recordar credenciales",
-                modifier = Modifier.padding(start = 8.dp)
+                text = "Mantener sesión iniciada",
+                modifier = Modifier.padding(start = 4.dp)
             )
         }
 
-        Spacer(modifier = Modifier.height(24.dp))
+        TextButton(
+            onClick = {
+                navController.navigate("resetpassword")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
+        ) {
+            Text("¿Has olvidado tu contraseña?")
+        }
+        Spacer(modifier = Modifier.height(6.dp))
 
         Button(
             onClick = {
@@ -241,8 +250,7 @@ fun findEmailByUsername(
     onResult: (String?) -> Unit
 ) {
     Log.d(TAG, "Buscando email para username: $username")
-    
-    // Buscar primero en la nueva estructura (basicInfo.username)
+
     Firebase.firestore.collection("users")
         .whereEqualTo("basicInfo.username", username)
         .limit(1)
@@ -253,8 +261,7 @@ fun findEmailByUsername(
                 val doc = querySnapshot.documents.first()
                 val data = doc.data
                 Log.d(TAG, "Datos del documento encontrado: $data")
-                
-                // Intentar obtener email de basicInfo.email
+
                 val basicInfo = data?.get("basicInfo") as? Map<*, *>
                 val email = basicInfo?.get("email") as? String
                 
@@ -262,7 +269,6 @@ fun findEmailByUsername(
                     Log.d(TAG, "✅ Email encontrado en basicInfo.email para username $username: $email")
                     onResult(email)
                 } else {
-                    // Fallback: buscar email en la raíz del documento (estructura antigua)
                     val emailFallback = data?.get("email") as? String ?: doc.getString("email")
                     if (emailFallback != null && emailFallback.isNotEmpty()) {
                         Log.d(TAG, "✅ Email encontrado en raíz del documento para username $username: $emailFallback")
@@ -273,7 +279,6 @@ fun findEmailByUsername(
                     }
                 }
             } else {
-                // Si no se encuentra en nueva estructura, buscar en estructura antigua
                 Log.d(TAG, "No encontrado en nueva estructura, buscando en estructura antigua...")
                 Firebase.firestore.collection("users")
                     .whereEqualTo("username", username)
@@ -303,7 +308,6 @@ fun findEmailByUsername(
         }
         .addOnFailureListener { e ->
             Log.e(TAG, "❌ Error buscando username en nueva estructura: ${e.message}", e)
-            // Intentar estructura antigua como fallback
             Firebase.firestore.collection("users")
                 .whereEqualTo("username", username)
                 .limit(1)
@@ -366,8 +370,7 @@ fun loginWithEmail(
                 val exception = task.exception
                 val errorMessage = exception?.message ?: "Error desconocido al iniciar sesión"
                 Log.e(TAG, "❌ Error en login con email $email: $errorMessage", exception)
-                
-                // Mensajes de error más amigables
+
                 val friendlyError = when {
                     errorMessage.contains("invalid-email", ignoreCase = true) -> 
                         "El formato del email no es válido"

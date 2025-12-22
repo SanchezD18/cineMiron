@@ -67,21 +67,17 @@ fun SearchApp(modifier: Modifier, navController: NavController, auth: FirebaseAu
     var textOnSearch by rememberSaveable { mutableStateOf("") }
     var selectedTabIndex by rememberSaveable { mutableStateOf(0) }
     val gridState = rememberLazyStaggeredGridState()
-    
-    // Estados para usuarios
+
     var users by remember { mutableStateOf<List<UserProfile>>(emptyList()) }
     var nearbyUsers by remember { mutableStateOf<List<UserProfile>>(emptyList()) }
     var isLoadingUsers by remember { mutableStateOf(false) }
     val currentUser = auth.currentUser
-    
-    // Estado para el diálogo de filtros
+
     var showFiltersDialog by rememberSaveable { mutableStateOf(false) }
 
-    // Cargar usuarios cercanos cuando se monta el componente
     LaunchedEffect(currentUser?.uid) {
         val userId = currentUser?.uid
         if (userId != null) {
-            // Cargar perfil del usuario actual para obtener su ubicación
             loadUserProfile(
                 userId = userId,
                 onSuccess = { currentProfile ->
@@ -91,28 +87,24 @@ fun SearchApp(modifier: Modifier, navController: NavController, auth: FirebaseAu
                             nearbyUsers = nearbyList
                         }
                     } else {
-                        // Si no tiene ubicación, cargar algunos usuarios públicos
                         loadPublicUsers { publicList ->
                             nearbyUsers = publicList
                         }
                     }
                 },
                 onError = {
-                    // Si no se puede cargar el perfil, cargar usuarios públicos
                     loadPublicUsers { publicList ->
                         nearbyUsers = publicList
                     }
                 }
             )
         } else {
-            // Si no hay usuario logueado, cargar usuarios públicos
             loadPublicUsers { publicList ->
                 nearbyUsers = publicList
             }
         }
     }
 
-    // Buscar usuarios cuando cambia el texto de búsqueda
     LaunchedEffect(textOnSearch) {
         if (selectedTabIndex == 1 && textOnSearch.isNotEmpty()) {
             isLoadingUsers = true
@@ -151,7 +143,6 @@ fun SearchApp(modifier: Modifier, navController: NavController, auth: FirebaseAu
             }
         }
 
-        // Tabs
         TabRow(selectedTabIndex = selectedTabIndex) {
             Tab(
                 selected = selectedTabIndex == 0,
@@ -165,10 +156,8 @@ fun SearchApp(modifier: Modifier, navController: NavController, auth: FirebaseAu
             )
         }
 
-        // Contenido según la tab seleccionada
         when (selectedTabIndex) {
             0 -> {
-                // Tab de Películas
                 LazyVerticalStaggeredGrid(
                     modifier = Modifier
                         .fillMaxSize()
@@ -189,17 +178,15 @@ fun SearchApp(modifier: Modifier, navController: NavController, auth: FirebaseAu
                 }
             }
             1 -> {
-                // Tab de Usuarios
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .weight(1f)
                 ) {
                     if (textOnSearch.isEmpty()) {
-                        // Mostrar usuarios cercanos cuando no hay búsqueda
                         item {
                             Text(
-                                text = "Usuarios cercanos",
+                                text = "Busqueda",
                                 style = MaterialTheme.typography.titleMedium,
                                 modifier = Modifier.padding(16.dp)
                             )
@@ -211,7 +198,6 @@ fun SearchApp(modifier: Modifier, navController: NavController, auth: FirebaseAu
                             )
                         }
                     } else {
-                        // Mostrar resultados de búsqueda
                         if (isLoadingUsers) {
                             item {
                                 Text(
@@ -239,14 +225,12 @@ fun SearchApp(modifier: Modifier, navController: NavController, auth: FirebaseAu
                 }
             }
         }
-        
-        // Diálogo de filtros
+
         if (showFiltersDialog) {
             SearchFiltersDialog(
                 onDismiss = { showFiltersDialog = false },
                 onApplyFilters = { sortOption, selectedGenres, contentType, onlyFriends ->
                     // TODO: Aplicar filtros cuando se implemente la funcionalidad
-                    // Por ahora solo front, no hace nada
                 }
             )
         }
@@ -292,7 +276,6 @@ fun DockedSearchBarConFiltro(
     }
 }
 
-// Función para buscar usuarios
 fun searchUsers(
     query: String,
     onResult: (List<UserProfile>) -> Unit
@@ -304,12 +287,9 @@ fun searchUsers(
 
     Log.d(TAG, "Buscando usuarios con query: $query")
 
-    // Cargar usuarios públicos y filtrar localmente por nombre
-    // Nota: Firestore no permite búsquedas de texto completo en campos anidados
-    // Por lo tanto, cargamos usuarios públicos y filtramos localmente
     Firebase.firestore.collection("users")
         .whereEqualTo("profileInfo.perfilPublico", true)
-        .limit(50) // Cargar más para tener mejores resultados
+        .limit(50)
         .get()
         .addOnSuccessListener { querySnapshot ->
             val userList = mutableListOf<UserProfile>()
@@ -321,8 +301,7 @@ fun searchUsers(
                     val nombre = profile.basicInfo.nombre.lowercase()
                     val bio = profile.profileInfo.bio.lowercase()
                     val ubicacion = profile.profileInfo.ubicacion.lowercase()
-                    
-                    // Filtrar si el query coincide con nombre, bio o ubicación
+
                     if (nombre.contains(queryLower) || 
                         bio.contains(queryLower) || 
                         ubicacion.contains(queryLower)) {
@@ -339,7 +318,6 @@ fun searchUsers(
         }
 }
 
-// Función para cargar usuarios cercanos
 fun loadNearbyUsers(
     location: String,
     onResult: (List<UserProfile>) -> Unit
@@ -364,12 +342,10 @@ fun loadNearbyUsers(
         }
         .addOnFailureListener { e ->
             Log.e(TAG, "Error cargando usuarios cercanos: ${e.message}", e)
-            // Si falla, cargar usuarios públicos
             loadPublicUsers(onResult)
         }
 }
 
-// Función para cargar usuarios públicos
 fun loadPublicUsers(
     onResult: (List<UserProfile>) -> Unit
 ) {
