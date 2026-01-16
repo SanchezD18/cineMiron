@@ -38,14 +38,14 @@ import com.example.cinemiron.tmp_utils.K
 
 
 @Composable
-fun HomeScreen(navController: NavController, modifier: Modifier = Modifier) {
+fun HomeScreenAPI(navController: NavController, modifier: Modifier = Modifier) {
     val viewModel: HomeViewModel = hiltViewModel()
-    HomeAppBar(modifier, navController, viewModel)
+    HomeAppBarAPI(modifier, navController, viewModel)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeAppBar(
+fun HomeAppBarAPI(
     modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: HomeViewModel
@@ -53,12 +53,12 @@ fun HomeAppBar(
     Scaffold(
         modifier = modifier
     ) { innerPadding ->
-        ScrollContent(innerPadding, navController, viewModel)
+        ScrollContentAPI(innerPadding, navController, viewModel)
     }
 }
 
 @Composable
-fun ScrollContent(
+fun ScrollContentAPI(
     innerPadding: PaddingValues,
     navController: NavController,
     viewModel: HomeViewModel
@@ -102,7 +102,7 @@ fun ScrollContent(
                 style = MaterialTheme.typography.headlineSmall
             )
             Spacer(modifier = Modifier.height(16.dp))
-            MovieRow(movies = homeState.trendingMovies, navController = navController)
+            MovieRowAPI(movies = homeState.trendingMovies, navController = navController)
             Spacer(modifier = Modifier.height(32.dp))
         }
 
@@ -113,7 +113,7 @@ fun ScrollContent(
                 style = MaterialTheme.typography.headlineSmall
             )
             Spacer(modifier = Modifier.height(16.dp))
-            MovieRow(movies = homeState.discoverMovies, navController = navController)
+            MovieRowAPI(movies = homeState.discoverMovies, navController = navController)
             Spacer(modifier = Modifier.height(32.dp))
         }
 
@@ -128,7 +128,7 @@ fun ScrollContent(
 }
 
 @Composable
-fun MovieRow(movies: List<Movie>, navController: NavController) {
+fun MovieRowAPI(movies: List<Movie>, navController: NavController) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier
@@ -136,13 +136,13 @@ fun MovieRow(movies: List<Movie>, navController: NavController) {
             .height(200.dp)
     ) {
         items(movies) { movie ->
-            MovieItem(movie = movie, navController = navController)
+            MovieItemAPI(movie = movie, navController = navController)
         }
     }
 }
 
 @Composable
-fun MovieItem(movie: Movie, navController: NavController) {
+fun MovieItemAPI(movie: Movie, navController: NavController) {
     val imageUrl = "${K.BASE_IMAGE_URL}${movie.posterPath}"
     
     AsyncImage(

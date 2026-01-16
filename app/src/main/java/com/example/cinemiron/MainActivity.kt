@@ -86,7 +86,8 @@ class MainActivity : ComponentActivity() {
                                 Row(Modifier.fillMaxWidth(),
                                     Arrangement.SpaceBetween,
                                     Alignment.CenterVertically) {
-                                Text(currentTitle)
+                                Text(text = currentTitle,
+                                    style = MaterialTheme.typography.titleLarge)
                                     if (!hiddenRoutes.contains(currentRoute)) {
                                     IconButton(
                                     onClick = {showSettingsDialog = true}

@@ -1,6 +1,5 @@
 package com.example.cinemiron.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,7 +40,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 import com.example.cinemiron.data.saveUserProfileToFirestore as saveUserProfileToFirestoreNew
 import kotlinx.coroutines.launch
@@ -206,7 +204,6 @@ fun RegisterScreen(navController: NavController,
                                 if (task.isSuccessful) {
                                     val user = task.result?.user
                                     if (user != null) {
-                                        Log.d(TAG, "Usuario creado en Firebase Auth: ${user.uid}, email: ${user.email}")
 
                                         saveUserProfileToFirestoreNew(
                                             userId = user.uid,
@@ -214,13 +211,11 @@ fun RegisterScreen(navController: NavController,
                                             username = username.trim(),
                                             onSuccess = {
                                                 isLoading = false
-                                                Log.d(TAG, "Usuario registrado completamente: ${user.uid}")
                                                 navController.navigate("home") {
                                                     popUpTo("login") { inclusive = true }
                                                 }
                                             },
                                             onError = { exception ->
-                                                Log.e(TAG, "Error guardando perfil, eliminando usuario de Auth", exception)
                                                 user.delete()
                                                     .addOnCompleteListener {
                                                         isLoading = false
@@ -231,13 +226,11 @@ fun RegisterScreen(navController: NavController,
                                     } else {
                                         isLoading = false
                                         errorMessage = "Error: No se pudo obtener información del usuario creado"
-                                        Log.e(TAG, "Usuario creado pero user es null")
                                     }
                                 } else {
                                     isLoading = false
                                     val error = task.exception?.message ?: "Error desconocido"
                                     errorMessage = "Error al crear cuenta: $error"
-                                    Log.e(TAG, "Error creando usuario en Firebase Auth", task.exception)
                                 }
                             }
                     }
@@ -281,12 +274,9 @@ fun verifyUsernameAvailable(
     val trimmedUsername = username.trim()
     
     if (trimmedUsername.isBlank()) {
-        Log.w(TAG, "Username vacío")
         onResult(false)
         return
     }
-    
-    Log.d(TAG, "Verificando disponibilidad del username: '$trimmedUsername'")
 
     Firebase.firestore.collection("users")
         .whereEqualTo("basicInfo.username", trimmedUsername)
@@ -294,28 +284,14 @@ fun verifyUsernameAvailable(
         .get()
         .addOnSuccessListener { querySnapshot ->
             val isAvailable = querySnapshot.isEmpty
-            
-            if (!querySnapshot.isEmpty) {
-                val existingDoc = querySnapshot.documents.first()
-                Log.w(TAG, "Username '$trimmedUsername' ya existe en documento: ${existingDoc.id}")
-                Log.d(TAG, "Datos del documento existente: ${existingDoc.data}")
-            } else {
-                Log.d(TAG, "Username '$trimmedUsername' está disponible")
-            }
-            
             onResult(isAvailable)
         }
         .addOnFailureListener { e ->
-            Log.e(TAG, "Error verificando username '$trimmedUsername': ${e.message}", e)
 
             if (e.message?.contains("PERMISSION_DENIED") == true || 
                 e.message?.contains("Missing or insufficient permissions") == true) {
-                Log.e(TAG, "❌ ERROR DE PERMISOS: Necesitas configurar las reglas de Firestore")
-                Log.e(TAG, "Ve a Firebase Console > Firestore Database > Rules")
-                Log.e(TAG, "Y configura las reglas para permitir lectura/escritura de la colección 'users'")
                 onResult(true)
             } else if (e.message?.contains("network") == true || e.message?.contains("UNAVAILABLE") == true) {
-                Log.w(TAG, "Error de red, permitiendo continuar. Se verificará al guardar.")
                 onResult(true)
             } else {
                 onResult(false)

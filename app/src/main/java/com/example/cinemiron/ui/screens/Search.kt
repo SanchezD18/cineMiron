@@ -1,12 +1,11 @@
 package com.example.cinemiron.ui.screens
 
-import android.util.Log
+
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -43,8 +42,6 @@ import com.example.cinemiron.data.UserProfile
 import com.example.cinemiron.data.loadUserProfile
 import com.example.cinemiron.ui.components.CardPelis
 import com.example.cinemiron.ui.components.SearchFiltersDialog
-import com.example.cinemiron.ui.components.SortOption
-import com.example.cinemiron.ui.components.ContentType
 import com.example.cinemiron.ui.components.UserSearchCard
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -285,8 +282,6 @@ fun searchUsers(
         return
     }
 
-    Log.d(TAG, "Buscando usuarios con query: $query")
-
     Firebase.firestore.collection("users")
         .whereEqualTo("profileInfo.perfilPublico", true)
         .limit(50)
@@ -309,11 +304,9 @@ fun searchUsers(
                     }
                 }
             }
-            Log.d(TAG, "Usuarios encontrados: ${userList.size}")
             onResult(userList)
         }
         .addOnFailureListener { e ->
-            Log.e(TAG, "Error buscando usuarios: ${e.message}", e)
             onResult(emptyList())
         }
 }
@@ -322,7 +315,6 @@ fun loadNearbyUsers(
     location: String,
     onResult: (List<UserProfile>) -> Unit
 ) {
-    Log.d(TAG, "Cargando usuarios cercanos de: $location")
 
     Firebase.firestore.collection("users")
         .whereEqualTo("profileInfo.ubicacion", location)
@@ -337,11 +329,9 @@ fun loadNearbyUsers(
                     userList.add(profile)
                 }
             }
-            Log.d(TAG, "Usuarios cercanos encontrados: ${userList.size}")
             onResult(userList)
         }
         .addOnFailureListener { e ->
-            Log.e(TAG, "Error cargando usuarios cercanos: ${e.message}", e)
             loadPublicUsers(onResult)
         }
 }
@@ -349,7 +339,6 @@ fun loadNearbyUsers(
 fun loadPublicUsers(
     onResult: (List<UserProfile>) -> Unit
 ) {
-    Log.d(TAG, "Cargando usuarios públicos")
 
     Firebase.firestore.collection("users")
         .whereEqualTo("profileInfo.perfilPublico", true)
@@ -363,11 +352,9 @@ fun loadPublicUsers(
                     userList.add(profile)
                 }
             }
-            Log.d(TAG, "Usuarios públicos encontrados: ${userList.size}")
             onResult(userList)
         }
         .addOnFailureListener { e ->
-            Log.e(TAG, "Error cargando usuarios públicos: ${e.message}", e)
             onResult(emptyList())
         }
 }

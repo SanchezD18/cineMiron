@@ -1,6 +1,5 @@
 package com.example.cinemiron.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -71,29 +70,19 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
 
     LaunchedEffect(currentUser?.uid) {
         val userId = currentUser?.uid
-        Log.d(TAG, "LaunchedEffect ejecutado - currentUser: ${currentUser?.email}, userId: $userId")
         if (userId != null) {
             isLoading = true
-            Log.d(TAG, "Cargando perfil para userId: $userId")
             loadUserProfile(
                 userId = userId,
                 onSuccess = { profile ->
                     userProfile = profile
                     isLoading = false
-                    Log.d(TAG, "Perfil cargado exitosamente:")
-                    Log.d(TAG, "  - UserId: ${profile.userId}")
-                    Log.d(TAG, "  - Nombre: ${profile.basicInfo.nombre}")
-                    Log.d(TAG, "  - Email: ${profile.basicInfo.email}")
-                    Log.d(TAG, "  - Fecha registro: ${profile.basicInfo.fechaRegistro}")
-                    Log.d(TAG, "  - Bio: ${profile.profileInfo.bio}")
                 },
                 onError = { exception ->
-                    Log.e(TAG, "Error cargando perfil: ${exception.message}", exception)
                     isLoading = false
                 }
             )
         } else {
-            Log.w(TAG, "No hay usuario logueado (currentUser es null)")
             isLoading = false
         }
     }
@@ -376,21 +365,11 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
                                                 userProfile = profile
                                             },
                                             onError = { exception ->
-                                                Log.e(
-                                                    TAG,
-                                                    "Error recargando perfil: ${exception.message}",
-                                                    exception
-                                                )
                                             }
                                         )
                                     }
                                 },
                                 onError = { exception ->
-                                    Log.e(
-                                        TAG,
-                                        "Error guardando perfil: ${exception.message}",
-                                        exception
-                                    )
                                     isSaving = false
                                 }
                             )
@@ -408,17 +387,14 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
 }
 fun formatDate(timestamp: com.google.firebase.Timestamp?): String {
     if (timestamp == null) {
-        Log.w(TAG, "Timestamp es null")
         return "Fecha no disponible"
     }
     return try {
         val date = timestamp.toDate()
         val format = SimpleDateFormat("MMMM yyyy", Locale("es", "ES"))
         val formatted = format.format(date)
-        Log.d(TAG, "Fecha formateada: $formatted (timestamp: $timestamp)")
         formatted
     } catch (e: Exception) {
-        Log.e(TAG, "Error formateando fecha: ${e.message}", e)
         "Fecha no disponible"
     }
 }

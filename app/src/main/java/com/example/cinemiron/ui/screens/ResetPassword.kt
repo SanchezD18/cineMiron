@@ -1,7 +1,6 @@
 package com.example.cinemiron.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,13 +10,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
@@ -49,11 +46,9 @@ fun ResetPassword(
     auth: FirebaseAuth
 ) {
     var usernameOrEmail by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var rememberCredentials by remember { mutableStateOf(false) }
-
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
@@ -110,20 +105,9 @@ fun ResetPassword(
             onClick = {
                 if (isButtonEnabled) {
                     isLoading = true
-                    loginUser(
-                        usernameOrEmail = usernameOrEmail.trim(),
-                        password = password,
-                        auth = auth,
-                        onSuccess = {
-                            isLoading = false
-                            navController.navigate("home") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                        },
-                        onError = { error ->
-                            isLoading = false
-                            errorMessage = error
-                        }
+                    forgotPassword(
+                        userId = usernameOrEmail,
+                        auth = auth
                     )
                 }
             },
@@ -157,4 +141,11 @@ fun ResetPassword(
             modifier = Modifier.padding(16.dp)
         )
     }
+}
+
+fun forgotPassword(
+    auth: FirebaseAuth,
+    userId: String
+){
+    auth.sendPasswordResetEmail(userId)
 }

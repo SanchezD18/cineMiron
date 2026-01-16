@@ -1,6 +1,5 @@
 package com.example.cinemiron.ui.screens
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -249,37 +248,29 @@ fun findEmailByUsername(
     username: String,
     onResult: (String?) -> Unit
 ) {
-    Log.d(TAG, "Buscando email para username: $username")
-
     Firebase.firestore.collection("users")
         .whereEqualTo("basicInfo.username", username)
         .limit(1)
         .get()
         .addOnSuccessListener { querySnapshot ->
-            Log.d(TAG, "Resultado búsqueda nueva estructura: ${querySnapshot.isEmpty}")
             if (!querySnapshot.isEmpty) {
                 val doc = querySnapshot.documents.first()
                 val data = doc.data
-                Log.d(TAG, "Datos del documento encontrado: $data")
 
                 val basicInfo = data?.get("basicInfo") as? Map<*, *>
                 val email = basicInfo?.get("email") as? String
                 
                 if (email != null && email.isNotEmpty()) {
-                    Log.d(TAG, "✅ Email encontrado en basicInfo.email para username $username: $email")
                     onResult(email)
                 } else {
                     val emailFallback = data?.get("email") as? String ?: doc.getString("email")
                     if (emailFallback != null && emailFallback.isNotEmpty()) {
-                        Log.d(TAG, "✅ Email encontrado en raíz del documento para username $username: $emailFallback")
                         onResult(emailFallback)
                     } else {
-                        Log.e(TAG, "❌ No se pudo encontrar email para username $username")
                         onResult(null)
                     }
                 }
             } else {
-                Log.d(TAG, "No encontrado en nueva estructura, buscando en estructura antigua...")
                 Firebase.firestore.collection("users")
                     .whereEqualTo("username", username)
                     .limit(1)
@@ -289,25 +280,20 @@ fun findEmailByUsername(
                             val doc = oldQuerySnapshot.documents.first()
                             val email = doc.getString("email")
                             if (email != null && email.isNotEmpty()) {
-                                Log.d(TAG, "✅ Email encontrado para username $username (estructura antigua): $email")
                                 onResult(email)
                             } else {
-                                Log.e(TAG, "❌ Email vacío o null en estructura antigua para username: $username")
                                 onResult(null)
                             }
                         } else {
-                            Log.w(TAG, "❌ No se encontró usuario con username: $username")
                             onResult(null)
                         }
                     }
                     .addOnFailureListener { e ->
-                        Log.e(TAG, "❌ Error buscando username (estructura antigua): ${e.message}", e)
                         onResult(null)
                     }
             }
         }
         .addOnFailureListener { e ->
-            Log.e(TAG, "❌ Error buscando username en nueva estructura: ${e.message}", e)
             Firebase.firestore.collection("users")
                 .whereEqualTo("username", username)
                 .limit(1)
@@ -316,8 +302,6 @@ fun findEmailByUsername(
                     if (!oldQuerySnapshot.isEmpty) {
                         val email = oldQuerySnapshot.documents.first().getString("email")
                         if (email != null && email.isNotEmpty()) {
-                            Log.d(TAG, "✅ Email encontrado (fallback estructura antigua): $email")
-                            onResult(email)
                         } else {
                             onResult(null)
                         }
@@ -326,7 +310,6 @@ fun findEmailByUsername(
                     }
                 }
                 .addOnFailureListener { e2 ->
-                    Log.e(TAG, "❌ Error en fallback: ${e2.message}", e2)
                     onResult(null)
                 }
         }
@@ -340,36 +323,29 @@ fun loginWithEmail(
     onError: (String) -> Unit
 ) {
     if (email.isEmpty() || email.isBlank()) {
-        Log.e(TAG, "❌ Email vacío o inválido")
         onError("Email inválido")
         return
     }
     
     if (password.isEmpty() || password.isBlank()) {
-        Log.e(TAG, "❌ Contraseña vacía")
         onError("Contraseña inválida")
         return
     }
-    
-    Log.d(TAG, "Intentando login con email: $email")
-    
+
     auth.signInWithEmailAndPassword(email.trim(), password)
         .addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val user = auth.currentUser
                 if (user != null) {
-                    Log.d(TAG, "✅ Login exitoso para: ${user.email}, UID: ${user.uid}")
                     updateLastLogin(user.uid) {
                         onSuccess()
                     }
                 } else {
-                    Log.e(TAG, "❌ Usuario es null después de login exitoso")
                     onError("Error al obtener información del usuario")
                 }
             } else {
                 val exception = task.exception
                 val errorMessage = exception?.message ?: "Error desconocido al iniciar sesión"
-                Log.e(TAG, "❌ Error en login con email $email: $errorMessage", exception)
 
                 val friendlyError = when {
                     errorMessage.contains("invalid-email", ignoreCase = true) -> 
@@ -396,11 +372,9 @@ fun updateLastLogin(
     Firebase.firestore.collection("users").document(userId)
         .update("lastLogin", FieldValue.serverTimestamp())
         .addOnSuccessListener {
-            Log.d(TAG, "lastLogin actualizado para: $userId")
             onComplete()
         }
         .addOnFailureListener { e ->
-            Log.e(TAG, "Error actualizando lastLogin: ${e.message}", e)
             onComplete()
         }
 }

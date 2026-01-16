@@ -92,7 +92,6 @@ fun TopFilmColumn(){
         }
     }
 }
-//Abstraer componentes y pasar parametros para datos pelicula
 @Composable
 fun TopFilmInfo(){
     Row(Modifier
@@ -109,6 +108,7 @@ fun TopFilmInfo(){
                 style = MaterialTheme.typography.titleLarge
             )
             Text(
+
                 text = "2000 · DIRECTED BY",
             )
             Text("Director Generico")
@@ -117,7 +117,8 @@ fun TopFilmInfo(){
                 modifier = Modifier.padding(vertical = 8.dp)
             ) {
                 TrailerButton()
-                //Pasar parametros de duracion
+
+
                 Text(
                     "420 mins"
                 )
@@ -235,7 +236,7 @@ fun RatingColumn(){
             rating = ratingValue,
             maxStars = 5,
             starSize = 40.dp,
-            activeColor = Color.White, // Dorado
+            activeColor = Color.White,
             inactiveColor = Color.DarkGray
         )
     }
@@ -256,9 +257,9 @@ fun StarRatingBar(
     ) {
         for (i in 1..maxStars) {
             val starRating = when {
-                rating >= i -> 1.0 // Estrella completa
-                rating > i - 1 -> rating - (i - 1) // Estrella parcial
-                else -> 0.0 // Estrella vacía
+                rating >= i -> 1.0
+                rating > i - 1 -> rating - (i - 1)
+                else -> 0.0
             }
 
             StarIcon(
@@ -283,7 +284,7 @@ fun StarIcon(
         modifier = Modifier.size(size),
         contentAlignment = Alignment.Center
     ) {
-        // Estrella de fondo (inactiva)
+
         Icon(
             imageVector = Icons.Default.Star,
             contentDescription = null,
@@ -291,7 +292,6 @@ fun StarIcon(
             modifier = Modifier.size(size)
         )
 
-        // Estrella activa con recorte
         Icon(
             imageVector = Icons.Default.Star,
             contentDescription = null,
@@ -301,7 +301,7 @@ fun StarIcon(
                 .drawWithContent {
                     drawIntoCanvas { canvas ->
                         canvas.save()
-                        // Crear región de recorte
+
                         canvas.clipRect(
                             left = 0f,
                             top = 0f,
@@ -315,11 +315,3 @@ fun StarIcon(
         )
     }
 }
-
-
-
-//@Preview
-//@Composable
-//fun PreviewFilmInfo(){
-//    FilmInfo()
-//}

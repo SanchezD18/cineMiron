@@ -61,32 +61,20 @@ fun ReviewScreen(navController: NavController, modifier: Modifier = Modifier, on
     var showDialog by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf("Todas") }
 
-
     Scaffold(
-
     ) { padding ->
         Column(
             modifier = modifier
                 .padding(padding)
                 .fillMaxSize()
         ) {
-
             ReviewsHeader(
                 onAddClick = { showDialog = true }
             )
-
-// Dropdown de Estadísticas
-            StatisticsDropdown()
-
-
-// Filtro tipo "toast"
             ReviewFilter(
                 selected = selectedFilter,
                 onSelectedChange = { selectedFilter = it }
             )
-
-
-// Lista de reseñas
             LazyColumn {
                 items(fakeReviews()) { review ->
                     ReviewCard(review)
@@ -100,7 +88,6 @@ fun ReviewScreen(navController: NavController, modifier: Modifier = Modifier, on
         AddReviewDialog(
             onDismiss = { showDialog = false },
             onSubmit = {
-// Añadir reseña a tu estado / ViewModel
                 showDialog = false
             }
         )
@@ -114,15 +101,11 @@ fun ReviewsHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = "Reseñas",
-            style = MaterialTheme.typography.headlineSmall
-        )
-
+        StatisticsDropdown()
         IconButton(onClick = onAddClick) {
             Icon(
                 imageVector = Icons.Filled.Add,
@@ -260,7 +243,6 @@ fun AddReviewDialog(
     var reviewDesc by remember { mutableStateOf("") }
     var spoiler by remember { mutableStateOf(false) }
 
-    // 🔑 VALIDACIÓN DEL FORMULARIO
     val isFormValid by remember {
         derivedStateOf {
             movieTitle.isNotBlank() &&
@@ -319,7 +301,7 @@ fun AddReviewDialog(
         confirmButton = {
             TextButton(
                 onClick = onSubmit,
-                enabled = isFormValid   // 🔥 AQUÍ ESTÁ LA CLAVE
+                enabled = isFormValid
             ) {
                 Text("Enviar reseña")
             }
