@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "613489567868",
+    "project_id": "cinemiron",
+    "storage_bucket": "cinemiron.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:613489567868:android:ba7e76613dd3cbfeb5c1f9",
+        "android_client_info": {
+          "package_name": "com.example.cinemiron"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5lATryLJ32BzyDNr37T4dT8A7yoQhAGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
