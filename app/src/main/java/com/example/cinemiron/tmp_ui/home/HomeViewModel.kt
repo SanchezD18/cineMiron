@@ -83,7 +83,7 @@ class HomeViewModel @Inject constructor(
             }
         ) { movie ->
             _homeState.update {
-                it.copy(isLoading = false, error = null, trendingMovies = movie)
+                it.copy(isLoading = false, error = null, upcomingMovies = movie)
             }
         }
     }
@@ -94,6 +94,7 @@ class HomeViewModel @Inject constructor(
 data class HomeState(
     val discoverMovies: List<Movie> = emptyList(),
     val trendingMovies: List<Movie> = emptyList(),
+    val upcomingMovies: List<Movie> = emptyList(),
     val error: String? = null,
     val isLoading : Boolean = false
 )

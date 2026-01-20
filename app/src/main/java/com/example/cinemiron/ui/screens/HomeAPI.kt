@@ -117,8 +117,19 @@ fun ScrollContentAPI(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
+        // Sección: Películas Descubiertas
+        if (homeState.upcomingMovies.isNotEmpty()) {
+            Text (
+                text = "Próximas películas",
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            MovieRowAPI(movies = homeState.upcomingMovies, navController = navController)
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+
         // Mostrar mensaje si no hay películas y no está cargando
-        if (!homeState.isLoading && homeState.discoverMovies.isEmpty() && homeState.trendingMovies.isEmpty() && homeState.error == null) {
+        if (!homeState.isLoading && homeState.discoverMovies.isEmpty() && homeState.trendingMovies.isEmpty() && homeState.upcomingMovies.isEmpty() && homeState.error == null) {
             Text(
                 text = "No hay películas disponibles",
                 modifier = Modifier.padding(16.dp)

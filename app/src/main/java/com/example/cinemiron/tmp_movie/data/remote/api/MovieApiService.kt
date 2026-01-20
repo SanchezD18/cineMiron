@@ -19,4 +19,10 @@ interface MovieApiService {
         @Query("api_key") apiKey: String = BuildConfig.apiKey,
         @Query("include_adult") includeAdult: Boolean = false
     ) : MovieDto
+
+    @GET(K.UPCOMING_MOVIE_ENDPOINT)
+    suspend fun fetchUpcomingMovie(
+        @Query("api_key") apiKey: String = BuildConfig.apiKey,
+        @Query("include_adult") includeAdult: Boolean = false
+    ) : MovieDto
 }
