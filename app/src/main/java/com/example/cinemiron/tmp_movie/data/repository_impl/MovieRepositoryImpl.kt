@@ -34,4 +34,14 @@ class MovieRepositoryImpl(
         emit(Response.Error(e))
     }
 
+    override fun fetchUpcomingMovie(): Flow<Response<List<Movie>>> = flow {
+        emit(Response.Loading())
+        val movieDto = movieApiService.fetchUpcomingMovie()
+        apiMapper.mapToDomain(movieDto).apply {
+            emit(Response.Success(this))
+        }
+    }.catch { e ->
+        emit(Response.Error(e))
+    }
+
 }

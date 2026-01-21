@@ -9,4 +9,5 @@ object K {
     const val TRENDING_MOVIE_ENDPOINT ="trending/movie/week"
     const val MOVIE_ID ="id"
     const val ACTOR_ID ="id"
+    const val UPCOMING_MOVIE_ENDPOINT ="movie/upcoming"
 }

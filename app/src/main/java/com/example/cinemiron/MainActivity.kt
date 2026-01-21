@@ -32,6 +32,7 @@ import com.example.cinemiron.ui.components.BottomNavBar
 import com.example.cinemiron.ui.components.SettingsDialog
 import com.example.cinemiron.ui.screens.FilmInfo
 import com.example.cinemiron.ui.screens.HomeScreen
+import com.example.cinemiron.ui.screens.HomeScreenAPI
 import com.example.cinemiron.ui.screens.LoginScreen
 import com.example.cinemiron.ui.screens.ProfileScreen
 import com.example.cinemiron.ui.screens.RegisterScreen
@@ -156,7 +157,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("home") {
-                            HomeScreen(
+                            HomeScreenAPI(
                                 navController,
                                 modifier = Modifier.padding(innerPadding)
                             )
