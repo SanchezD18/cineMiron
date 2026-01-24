@@ -3,7 +3,9 @@ package com.example.cinemiron.tmp_movie.data.repository_impl
 import com.example.cinemiron.tmp_movie.data.remote.api.MovieApiService
 import com.example.cinemiron.tmp_common.data.ApiMapper
 import com.example.cinemiron.tmp_movie.data.remote.models.MovieDto
+import com.example.cinemiron.tmp_movie.data.remote.models.MovieDetailDTO
 import com.example.cinemiron.tmp_movie.domain.models.Movie
+import com.example.cinemiron.tmp_movie.domain.models.MovieDetail
 import com.example.cinemiron.tmp_movie.domain.repository.MovieRepository
 import com.example.cinemiron.tmp_utils.Response
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +14,8 @@ import kotlinx.coroutines.flow.flow
 
 class MovieRepositoryImpl(
     private val movieApiService: MovieApiService,
-    private val apiMapper: ApiMapper<List<Movie>, MovieDto>
+    private val apiMapper: ApiMapper<List<Movie>, MovieDto>,
+    private val movieDetailMapper: ApiMapper<MovieDetail, MovieDetailDTO>
 ): MovieRepository {
     override fun fetchDiscoverMovie(): Flow<Response<List<Movie>>> = flow {
         emit(Response.Loading())
@@ -40,6 +43,15 @@ class MovieRepositoryImpl(
         apiMapper.mapToDomain(movieDto).apply {
             emit(Response.Success(this))
         }
+    }.catch { e ->
+        emit(Response.Error(e))
+    }
+
+    override fun fetchMovieDetail(movieId: Int): Flow<Response<MovieDetail>> = flow {
+        emit(Response.Loading())
+        val movieDetailDto = movieApiService.fetchMovieDetail(movieId)
+        val movieDetail = movieDetailMapper.mapToDomain(movieDetailDto)
+        emit(Response.Success(movieDetail))
     }.catch { e ->
         emit(Response.Error(e))
     }

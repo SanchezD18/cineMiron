@@ -163,8 +163,8 @@ fun MovieItemAPI(movie: Movie, navController: NavController) {
             .size(width = 120.dp, height = 180.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = {
-                // Navegar a la pantalla de detalles de la película
-                navController.navigate("filminfo")
+                // Navegar a la pantalla de detalles de la película con el ID
+                navController.navigate("filminfo/${movie.id}")
             }),
         contentScale = ContentScale.Crop
     )

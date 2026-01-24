@@ -1,9 +1,11 @@
 package com.example.cinemiron.tmp_movie.data.remote.api
 
 import com.example.cinemiron.BuildConfig
+import com.example.cinemiron.tmp_movie.data.remote.models.MovieDetailDTO
 import com.example.cinemiron.tmp_movie.data.remote.models.MovieDto
 import com.example.cinemiron.tmp_utils.K
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface MovieApiService {
@@ -25,4 +27,10 @@ interface MovieApiService {
         @Query("api_key") apiKey: String = BuildConfig.apiKey,
         @Query("include_adult") includeAdult: Boolean = false
     ) : MovieDto
+
+    @GET("${K.MOVIE_DETAIL_ENDPOINT}{movieId}")
+    suspend fun fetchMovieDetail(
+        @Path("movieId") movieId: Int,
+        @Query("api_key") apiKey: String = BuildConfig.apiKey
+    ) : MovieDetailDTO
 }

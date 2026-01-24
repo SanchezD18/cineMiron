@@ -2,10 +2,13 @@ package com.example.cinemiron.tmp_di
 
 import com.example.cinemiron.tmp_common.data.ApiMapper
 import com.example.cinemiron.tmp_movie.data.mapper_impl.MovieApiMapperImpl
+import com.example.cinemiron.tmp_movie.data.mapper_impl.MovieDetailApiMapperImpl
 import com.example.cinemiron.tmp_movie.data.remote.api.MovieApiService
 import com.example.cinemiron.tmp_movie.data.remote.models.MovieDto
+import com.example.cinemiron.tmp_movie.data.remote.models.MovieDetailDTO
 import com.example.cinemiron.tmp_movie.data.repository_impl.MovieRepositoryImpl
 import com.example.cinemiron.tmp_movie.domain.models.Movie
+import com.example.cinemiron.tmp_movie.domain.models.MovieDetail
 import com.example.cinemiron.tmp_movie.domain.repository.MovieRepository
 import com.example.cinemiron.tmp_utils.K
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -31,14 +34,19 @@ object MovieModule {
     @Singleton
     fun provideMovieRepository(
         movieApiService: MovieApiService,
-        mapper: ApiMapper<List<Movie>, MovieDto>
+        mapper: ApiMapper<List<Movie>, MovieDto>,
+        movieDetailMapper: ApiMapper<MovieDetail, MovieDetailDTO>
     ) : MovieRepository = MovieRepositoryImpl(
-        movieApiService,mapper
+        movieApiService, mapper, movieDetailMapper
     )
 
     @Provides
     @Singleton
     fun providoMovieMapper(): ApiMapper<List<Movie>, MovieDto> = MovieApiMapperImpl()
+
+    @Provides
+    @Singleton
+    fun provideMovieDetailMapper(): ApiMapper<MovieDetail, MovieDetailDTO> = MovieDetailApiMapperImpl()
 
     @Provides
     @Singleton

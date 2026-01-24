@@ -88,6 +88,24 @@ class HomeViewModel @Inject constructor(
         }
     }
 
+    private fun fetchMovieDetail(movieId: Int) = viewModelScope.launch {
+        repository.fetchTrendingMovie().collectAndHandle(
+            onError = { error ->
+                _homeState.update {
+                    it.copy(isLoading = false, error = error?.message)
+                }
+            },
+            onLoading = {
+                _homeState.update {
+                    it.copy(isLoading = true, error = null)
+                }
+            }
+        ) { movie ->
+            _homeState.update {
+                it.copy(isLoading = false, error = null, trendingMovies = movie)
+            }
+        }
+    }
 
 }
 

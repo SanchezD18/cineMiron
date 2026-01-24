@@ -24,14 +24,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.cinemiron.ui.components.BottomNavBar
 import com.example.cinemiron.ui.components.SettingsDialog
-import com.example.cinemiron.ui.screens.FilmInfo
-import com.example.cinemiron.ui.screens.HomeScreen
+import com.example.cinemiron.ui.screens.FilmInfoAPI
 import com.example.cinemiron.ui.screens.HomeScreenAPI
 import com.example.cinemiron.ui.screens.LoginScreen
 import com.example.cinemiron.ui.screens.ProfileScreen
@@ -168,10 +169,19 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.padding(innerPadding)
                             )
                         }
-                        composable("filminfo") {
-                            FilmInfo(
-                                navController,
-                                modifier = Modifier.padding(innerPadding)
+                        composable(
+                            route = "filminfo/{movieId}",
+                            arguments = listOf(
+                                navArgument("movieId") {
+                                    type = NavType.IntType
+                                }
+                            )
+                        ) { backStackEntry ->
+                            val movieId = backStackEntry.arguments?.getInt("movieId")
+                            FilmInfoAPI(
+                                navController = navController,
+                                modifier = Modifier.padding(innerPadding),
+                                movieId = movieId
                             )
                         }
                         composable("review") {
