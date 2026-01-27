@@ -28,7 +28,7 @@ interface MovieApiService {
         @Query("include_adult") includeAdult: Boolean = false
     ) : MovieDto
 
-    @GET("${K.MOVIE_DETAIL_ENDPOINT}{movieId}")
+    @GET("${K.MOVIE_DETAIL_ENDPOINT}{movieId}?${K.LANGUAGE}")
     suspend fun fetchMovieDetail(
         @Path("movieId") movieId: Int,
         @Query("api_key") apiKey: String = BuildConfig.apiKey

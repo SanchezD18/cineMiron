@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.ContentScale
@@ -74,62 +76,117 @@ fun FilmInfoContentAPI(
     navController: NavController,
     filmInfoState: com.example.cinemiron.tmp_ui.filminfo.FilmInfoState
 ) {
-    Column(modifier.fillMaxSize()) {
-        when {
-            filmInfoState.isLoading && filmInfoState.movieDetail == null -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+    when {
+        filmInfoState.isLoading && filmInfoState.movieDetail == null -> {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
-            filmInfoState.error != null -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Error: ${filmInfoState.error}",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
+        }
+        filmInfoState.error != null -> {
+            Box(
+                modifier = modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Error: ${filmInfoState.error}",
+                    color = MaterialTheme.colorScheme.error
+                )
             }
-            filmInfoState.movieDetail != null -> {
-                TopFilmColumnAPI(filmInfoState.movieDetail!!)
-            }
+        }
+        filmInfoState.movieDetail != null -> {
+            TopFilmColumnAPI(
+                movieDetail = filmInfoState.movieDetail!!,
+                modifier = modifier
+            )
         }
     }
 }
 
 @Composable
-fun TopFilmColumnAPI(movieDetail: com.example.cinemiron.tmp_movie.domain.models.MovieDetail) {
+fun TopFilmColumnAPI(
+    movieDetail: com.example.cinemiron.tmp_movie.domain.models.MovieDetail,
+    modifier: Modifier = Modifier
+) {
     val scrollState = rememberLazyListState()
+    val backdropUrl = if (!movieDetail.backdrop_path.isNullOrEmpty()) {
+        "${K.BASE_IMAGE_URL}${movieDetail.backdrop_path}"
+    } else null
 
-    LazyColumn(
-        state = scrollState,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        item { TopFilmInfoAPI(movieDetail) }
-        item { DescriptionRowAPI(movieDetail.overview) }
-        item {
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 22.dp),
-                thickness = DividerDefaults.Thickness,
-                color = Primary
-            )
+    val backgroundColor = MaterialTheme.colorScheme.background
+
+    Column(modifier = modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.25f)
+        ) {
+            if (backdropUrl != null) {
+                AsyncImage(
+                    model = backdropUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .drawWithContent {
+                            drawContent()
+                            drawRect(
+                                brush = Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Transparent,
+                                        Color.Transparent,
+                                        backgroundColor.copy(alpha = 0.3f),
+                                        backgroundColor.copy(alpha = 0.6f),
+                                        backgroundColor.copy(alpha = 0.9f),
+                                        backgroundColor
+                                    ),
+                                    startY = 0f,
+                                    endY = size.height
+                                )
+                            )
+                        },
+                    contentScale = ContentScale.Crop
+                )
+            }
+
+            TopFilmInfoAPI(movieDetail)
         }
-        item { RatingRowAPI(movieDetail.vote_average) }
-        item {
-            HorizontalDivider(
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 22.dp),
-                thickness = DividerDefaults.Thickness,
-                color = Primary
-            )
+
+        LazyColumn(
+            state = scrollState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            item {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Presupuesto: ${movieDetail.budget} $",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Black
+                    )
+                    Text(
+                        text = "Recaudación: ${movieDetail.revenue} $",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.Black
+                    )
+                }
+                DescriptionRowAPI(movieDetail.overview) }
+            item {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 22.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color = Primary
+                )
+            }
+            item { RatingRowAPI(movieDetail.vote_average) }
         }
     }
 }
@@ -141,42 +198,49 @@ fun TopFilmInfoAPI(movieDetail: com.example.cinemiron.tmp_movie.domain.models.Mo
     val year = movieDetail.release_date.take(4)
     val runtimeText = "${movieDetail.runtime} mins"
 
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .height(275.dp)
-            .padding(horizontal = 22.dp, vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
+    Box(
+        modifier = Modifier.fillMaxSize()
     ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                text = movieDetail.title,
-                style = MaterialTheme.typography.titleLarge
-            )
-            Text(
-                text = "$year · $genresText",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(vertical = 8.dp)
-            ) {
-                TrailerButtonAPI()
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .align(Alignment.BottomStart)
+                .padding(horizontal = 22.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.Bottom
+        ) {
+            Column(Modifier.weight(1f)) {
                 Text(
-                    text = runtimeText,
-                    modifier = Modifier.padding(start = 8.dp)
+                    text = movieDetail.title,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = Color.White
                 )
+                Text(
+                    text = "$year · $genresText",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.White.copy(alpha = 0.9f)
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    TrailerButtonAPI()
+                    Text(
+                        text = runtimeText,
+                        modifier = Modifier.padding(start = 8.dp),
+                        color = Color.White.copy(alpha = 0.9f)
+                    )
+                }
             }
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = movieDetail.title,
+                modifier = Modifier
+                    .width(120.dp)
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                contentScale = ContentScale.Crop
+            )
         }
-        AsyncImage(
-            model = imageUrl,
-            contentDescription = movieDetail.title,
-            modifier = Modifier
-                .width(120.dp)
-                .height(180.dp)
-                .clip(RoundedCornerShape(8.dp)),
-            contentScale = ContentScale.Crop
-        )
     }
 }
 
@@ -212,6 +276,7 @@ fun DescriptionRowAPI(description: String) {
             text = description.ifEmpty { "No hay descripción disponible" },
             maxLines = if (expanded) Int.MAX_VALUE else 2,
             overflow = TextOverflow.Ellipsis,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.clickable { expanded = !expanded }
         )
         if (!expanded) {
@@ -234,6 +299,7 @@ fun DescriptionRowAPI(description: String) {
             )
         }
     }
+
 }
 
 @Composable

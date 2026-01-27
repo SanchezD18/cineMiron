@@ -10,8 +10,6 @@ data class MovieDetailDTO(
     val adult: Boolean,
     @SerialName("backdrop_path")
     val backdropPath: String? = null,
-    @SerialName("belongs_to_collection")
-    val belongsToCollection: String? = null,
     @SerialName("budget")
     val budget: Int,
     @SerialName("genres")

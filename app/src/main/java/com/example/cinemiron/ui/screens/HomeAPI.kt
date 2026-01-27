@@ -161,6 +161,7 @@ fun MovieItemAPI(movie: Movie, navController: NavController) {
         contentDescription = movie.title,
         modifier = Modifier
             .size(width = 120.dp, height = 180.dp)
+
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = {
                 // Navegar a la pantalla de detalles de la película con el ID
