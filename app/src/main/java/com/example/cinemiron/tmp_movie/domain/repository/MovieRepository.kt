@@ -11,4 +11,6 @@ interface MovieRepository {
     fun fetchUpcomingMovie(): Flow<Response<List<Movie>>>
     fun fetchMovieDetail(movieId: Int): Flow<Response<MovieDetail>>
     fun fetchMovieTrailer(movieId: Int): Flow<Response<String>>
+
+    fun fetchSearchMovie(querytext: String): Flow<Response<List<Movie>>>
 }

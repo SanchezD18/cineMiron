@@ -11,4 +11,6 @@ object K {
     const val MOVIE_ID ="id"
     const val ACTOR_ID ="id"
     const val UPCOMING_MOVIE_ENDPOINT ="movie/upcoming"
+
+    const val SEARCH_MOVIE_ENPOINT ="search/movie"
 }

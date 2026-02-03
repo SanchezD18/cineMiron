@@ -73,4 +73,12 @@ class MovieRepositoryImpl(
         emit(Response.Error(e))
     }
 
+    override fun fetchSearchMovie(querytext: String): Flow<Response<List<Movie>>> = flow {
+        emit(Response.Loading())
+        val movieDto = movieApiService.fetchSearchMovie(querytext)
+        apiMapper.mapToDomain(movieDto).apply {
+            emit(Response.Success(this))}
+    }.catch { e ->
+        emit(Response.Error(e))
+    }
 }

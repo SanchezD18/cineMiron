@@ -3,9 +3,7 @@ package com.example.cinemiron.tmp_movie.data.remote.api
 import com.example.cinemiron.BuildConfig
 import com.example.cinemiron.tmp_movie.data.remote.models.MovieDetailDTO
 import com.example.cinemiron.tmp_movie.data.remote.models.MovieDto
-import com.example.cinemiron.tmp_movie.data.remote.models.MovieVideoDto
 import com.example.cinemiron.tmp_movie.data.remote.models.MovieVideoResponseDto
-import com.example.cinemiron.tmp_movie.data.remote.models.VideoResponseDto
 import com.example.cinemiron.tmp_utils.K
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -43,5 +41,10 @@ interface MovieApiService {
         @Query("api_key") apiKey: String = BuildConfig.apikey
     ): MovieVideoResponseDto
 
-
+    @GET(K.SEARCH_MOVIE_ENPOINT)
+    suspend fun fetchSearchMovie(
+    @Query("query") movieId: String,
+    @Query("api_key") apiKey: String = BuildConfig.apikey,
+    @Query("include_adult") includeAdult: Boolean = false
+    ): MovieDto
 }
