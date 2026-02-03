@@ -42,7 +42,8 @@ fun MovieCard(
             .padding(4.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFC2CFBE))
     ) {
-        Row(modifier = Modifier.fillMaxWidth()
+        Row(modifier = Modifier
+            .fillMaxWidth()
             .padding(10.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -64,9 +65,36 @@ fun MovieCard(
                     overflow = TextOverflow.Ellipsis,
                     color = Color(0xFF000000)
                 )
-                Text(text = movie.overview,
-                    modifier = Modifier.padding(start = 10.dp),
-                    fontSize = 12.sp)
-            }}
+                Row(
+                    Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Fecha de salida: ",
+                        modifier = Modifier.padding(start = 10.dp),
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = movie.releaseDate.take(4),
+                        modifier = Modifier.padding(start = 2.dp),
+                        fontSize = 12.sp
+                    )
+                }
+                Row(
+                    Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Valoración: ",
+                        modifier = Modifier.padding(start = 10.dp),
+                        fontSize = 12.sp
+                    )
+                    Text(
+                        text = (movie.voteAverage).toString(),
+                        modifier = Modifier.padding(start = 2.dp),
+                        fontSize = 12.sp
+                    )
+                }
+
+            }
+        }
     }
 }
