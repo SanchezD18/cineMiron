@@ -58,6 +58,7 @@ import coil.compose.AsyncImage
 import com.example.cinemiron.tmp_ui.filminfo.FilmInfoViewModel
 import com.example.cinemiron.tmp_utils.K
 import com.example.cinemiron.ui.theme.Primary
+import com.example.cinemiron.tmp_movie.domain.models.MovieDetail
 
 @Composable
 fun FilmInfoAPI(navController: NavController, modifier: Modifier = Modifier, movieId: Int? = null) {
@@ -199,7 +200,7 @@ fun TopFilmColumnAPI(
 }
 
 @Composable
-fun TopFilmInfoAPI(movieDetail: com.example.cinemiron.tmp_movie.domain.models.MovieDetail) {
+fun TopFilmInfoAPI(movieDetail: MovieDetail) {
     val imageUrl = "${K.BASE_IMAGE_URL}${movieDetail.poster_path}"
     val genresText = movieDetail.genres.joinToString(", ") { it.name }
     val year = movieDetail.release_date.take(4)
