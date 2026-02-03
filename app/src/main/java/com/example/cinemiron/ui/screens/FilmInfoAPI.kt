@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -171,20 +172,24 @@ fun TopFilmColumnAPI(
                 .weight(1f)
         ) {
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 22.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
                         text = "Presupuesto: ${movieDetail.budget} $",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "Recaudación: ${movieDetail.revenue} $",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
+                Spacer(modifier = Modifier.height(16.dp))
                 DescriptionRowAPI(movieDetail.overview) }
             item {
                 HorizontalDivider(
@@ -221,11 +226,13 @@ fun TopFilmInfoAPI(movieDetail: com.example.cinemiron.tmp_movie.domain.models.Mo
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White
                 )
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "$year · $genresText",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.9f)
                 )
+                Spacer(modifier = Modifier.height(32.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -240,6 +247,7 @@ fun TopFilmInfoAPI(movieDetail: com.example.cinemiron.tmp_movie.domain.models.Mo
                         color = Color.White.copy(alpha = 0.9f)
                     )
                 }
+
             }
             AsyncImage(
                 model = imageUrl,
