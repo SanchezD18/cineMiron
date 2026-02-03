@@ -201,7 +201,7 @@ fun SearchAPIApp(
                             MovieCard(
                                 movie = movie,
                                 onClick = {
-                                    navController.navigate("movieDetail/${movie.id}")
+                                    navController.navigate("filminfo/${movie.id}")
                                 }
                             )
                         }
