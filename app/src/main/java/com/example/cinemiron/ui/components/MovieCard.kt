@@ -10,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.cinemiron.tmp_movie.domain.models.Movie
+import com.example.cinemiron.domain.models.Movie
 import kotlin.text.take
 
 @Composable

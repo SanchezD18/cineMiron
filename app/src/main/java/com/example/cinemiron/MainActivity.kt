@@ -10,8 +10,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -35,15 +35,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.cinemiron.ui.components.BottomNavBar
 import com.example.cinemiron.ui.components.SettingsDialog
-import com.example.cinemiron.ui.screens.FilmInfoAPI
-import com.example.cinemiron.ui.screens.HomeScreenAPI
-import com.example.cinemiron.ui.screens.LoginScreen
-import com.example.cinemiron.ui.screens.ProfileScreen
-import com.example.cinemiron.ui.screens.RegisterScreen
-import com.example.cinemiron.ui.screens.ResetPassword
-import com.example.cinemiron.ui.screens.ReviewScreen
-import com.example.cinemiron.ui.screens.SearchScreen
-import com.example.cinemiron.ui.screens.SearchScreenAPI
+import com.example.cinemiron.ui.auth.login.LoginScreen
+import com.example.cinemiron.ui.auth.register.RegisterScreen
+import com.example.cinemiron.ui.auth.resetpassword.ResetPasswordScreen
+import com.example.cinemiron.ui.home.HomeScreen
+import com.example.cinemiron.ui.search.SearchScreen
+import com.example.cinemiron.ui.movie.detail.MovieDetailScreen
+import com.example.cinemiron.ui.profile.ProfileScreen
+import com.example.cinemiron.ui.review.ReviewScreen
 import com.example.cinemiron.ui.theme.CineMironTheme
 import com.example.cinemiron.ui.theme.ColorSchemeOption
 import com.google.firebase.Firebase
@@ -139,7 +138,7 @@ class MainActivity : ComponentActivity() {
                                 contentColor = MaterialTheme.colorScheme.onPrimary
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.ArrowBack,
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = "Añadir favorito."
                                 )
                             }
@@ -166,20 +165,20 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("resetpassword") {
-                            ResetPassword(
+                            ResetPasswordScreen(
                                 navController,
                                 modifier = Modifier.padding(innerPadding),
                                 auth
                             )
                         }
                         composable("home") {
-                            HomeScreenAPI(
+                            HomeScreen(
                                 navController,
                                 modifier = Modifier.padding(innerPadding)
                             )
                         }
                         composable("search") {
-                            SearchScreenAPI(
+                            SearchScreen(
                                 navController,
                                 modifier = Modifier.padding(innerPadding)
                             )
@@ -193,7 +192,7 @@ class MainActivity : ComponentActivity() {
                             )
                         ) { backStackEntry ->
                             val movieId = backStackEntry.arguments?.getInt("movieId")
-                            FilmInfoAPI(
+                            MovieDetailScreen(
                                 navController = navController,
                                 modifier = Modifier.padding(innerPadding),
                                 movieId = movieId
