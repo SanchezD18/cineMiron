@@ -1,15 +1,15 @@
 package com.example.cinemiron.ui.screens
 
+import android.R
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,13 +22,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -48,9 +46,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -60,6 +60,8 @@ import com.example.cinemiron.domain.models.MovieDetail
 import com.example.cinemiron.ui.movie.detail.FilmInfoState
 import com.example.cinemiron.ui.movie.detail.MovieDetailViewModel
 import com.example.cinemiron.ui.theme.Primary
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun FilmInfoAPI(navController: NavController, modifier: Modifier = Modifier, movieId: Int? = null) {
@@ -134,7 +136,7 @@ fun TopFilmColumnAPI(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.25f)
+                .fillMaxHeight(0.35f)
         ) {
             if (backdropUrl != null) {
                 AsyncImage(
@@ -173,21 +175,32 @@ fun TopFilmColumnAPI(
                 .weight(1f)
         ) {
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 22.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "Presupuesto: ${movieDetail.budget} $",
+                        text = "${formatMoney(movieDetail.budget)} $ - Presupuesto",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Recaudación: ${movieDetail.revenue} $",
+                        text = "${formatMoney(movieDetail.revenue)} $ - Recaudación",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    ProfitLossText(
+                        budget = movieDetail.budget,
+                        revenue = movieDetail.revenue
                     )
                 }
-                DescriptionRowAPI(movieDetail.overview) }
+                RatingRowAPI(movieDetail.vote_average)
+                DescriptionRowAPI(
+                    movieDetail.overview
+                )
+            }
             item {
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp, horizontal = 22.dp),
@@ -195,7 +208,6 @@ fun TopFilmColumnAPI(
                     color = Primary
                 )
             }
-            item { RatingRowAPI(movieDetail.vote_average) }
         }
     }
 }
@@ -214,7 +226,7 @@ fun TopFilmInfoAPI(movieDetail: MovieDetail) {
             Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomStart)
-                .padding(horizontal = 22.dp, vertical = 16.dp),
+                .padding(horizontal = 22.dp, vertical = 32.dp),
             verticalAlignment = Alignment.Bottom
         ) {
             Column(Modifier.weight(1f)) {
@@ -223,11 +235,13 @@ fun TopFilmInfoAPI(movieDetail: MovieDetail) {
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White
                 )
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "$year · $genresText",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.9f)
                 )
+                Spacer(modifier = Modifier.height(32.dp))
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(vertical = 8.dp)
@@ -242,6 +256,7 @@ fun TopFilmInfoAPI(movieDetail: MovieDetail) {
                         color = Color.White.copy(alpha = 0.9f)
                     )
                 }
+
             }
             AsyncImage(
                 model = imageUrl,
@@ -295,6 +310,11 @@ fun DescriptionRowAPI(description: String) {
         Modifier.padding(horizontal = 22.dp, vertical = 2.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            text = "- Sinopsis:",
+            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyLarge
+        )
         Text(
             text = description.ifEmpty { "No hay descripción disponible" },
             maxLines = if (expanded) Int.MAX_VALUE else 2,
@@ -429,3 +449,22 @@ fun StarIconAPI(
     }
 }
 
+@Composable
+fun ProfitLossText(budget: Int, revenue: Int) {
+    val result = revenue - budget
+    val isProfit = result >= 0
+
+    val label = if (isProfit) "Beneficios" else "Pérdidas"
+    val color = if (isProfit) Color(0xFF2E7D32) else Color(0xFFC62828)
+
+    Text(
+        text = "${formatMoney(kotlin.math.abs(result))} $ - $label",
+        style = MaterialTheme.typography.bodyMedium,
+        color = color
+    )
+}
+
+fun formatMoney(value: Int): String {
+    val formatter = NumberFormat.getNumberInstance(Locale("es", "ES"))
+    return formatter.format(value)
+}
