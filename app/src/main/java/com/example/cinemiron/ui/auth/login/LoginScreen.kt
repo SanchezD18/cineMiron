@@ -1,5 +1,6 @@
 package com.example.cinemiron.ui.auth.login
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,8 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHost
@@ -37,6 +38,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.edit
 import androidx.navigation.NavController
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -58,16 +60,16 @@ fun LoginScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var rememberCredentials by remember { mutableStateOf(false) }
-    
+
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    
+
     val isButtonEnabled by remember {
         derivedStateOf {
             usernameOrEmail.isNotBlank() && password.isNotBlank() && !isLoading
         }
     }
-    
+
     LaunchedEffect(errorMessage) {
         errorMessage?.let { message ->
             coroutineScope.launch {
@@ -91,15 +93,18 @@ fun LoginScreen(
             color = MaterialTheme.colorScheme.primary,
             textAlign = TextAlign.Center
         )
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Text(
             text = "Inicia sesión para continuar",
             fontSize = 16.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
+
         Spacer(modifier = Modifier.height(32.dp))
-        
+
         OutlinedTextField(
             value = usernameOrEmail,
             onValueChange = { usernameOrEmail = it },
@@ -109,6 +114,7 @@ fun LoginScreen(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             enabled = !isLoading
         )
+
         Spacer(modifier = Modifier.height(16.dp))
 
         OutlinedTextField(
@@ -117,7 +123,8 @@ fun LoginScreen(
             label = { Text("Contraseña") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (passwordVisible)
+                VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
                 TextButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -129,6 +136,7 @@ fun LoginScreen(
             },
             enabled = !isLoading
         )
+
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(
@@ -147,15 +155,6 @@ fun LoginScreen(
             )
         }
 
-        TextButton(
-            onClick = {
-                navController.navigate("resetpassword")
-            },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !isLoading
-        ) {
-            Text("¿Has olvidado tu contraseña?")
-        }
         Spacer(modifier = Modifier.height(6.dp))
 
         Button(
@@ -166,12 +165,23 @@ fun LoginScreen(
                         usernameOrEmail = usernameOrEmail.trim(),
                         password = password,
                         auth = auth,
+                        rememberSession = rememberCredentials,
+                        context = navController.context,
                         onSuccess = {
                             isLoading = false
+
+                            val prefs = navController.context
+                                .getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+
+                            prefs.edit {
+                                putBoolean("remember_session", rememberCredentials)
+                            }
+
                             navController.navigate("home") {
                                 popUpTo("login") { inclusive = true }
                             }
-                        },
+                        }
+                        ,
                         onError = { error ->
                             isLoading = false
                             errorMessage = error
@@ -201,9 +211,19 @@ fun LoginScreen(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
+        TextButton(
+            onClick = {
+                navController.navigate("resetpassword")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !isLoading
+        ) {
+            Text("¿Has olvidado tu contraseña?")
+        }
+
         TextButton(
             onClick = {
                 navController.navigate("register")
@@ -213,7 +233,7 @@ fun LoginScreen(
         ) {
             Text("¿No tienes cuenta? Regístrate")
         }
-        
+
         SnackbarHost(
             hostState = snackbarHostState,
             modifier = Modifier.padding(16.dp)
@@ -226,17 +246,19 @@ fun loginUser(
     usernameOrEmail: String,
     password: String,
     auth: FirebaseAuth,
+    rememberSession: Boolean,
+    context: Context,
     onSuccess: () -> Unit,
     onError: (String) -> Unit
 ) {
     val isEmail = usernameOrEmail.contains("@")
-    
+
     if (isEmail) {
-        loginWithEmail(usernameOrEmail, password, auth, onSuccess, onError)
+        loginWithEmail(usernameOrEmail, password, auth, rememberSession, context, onSuccess, onError)
     } else {
         findEmailByUsername(usernameOrEmail) { email ->
             if (email != null) {
-                loginWithEmail(email, password, auth, onSuccess, onError)
+                loginWithEmail(email, password, auth,rememberSession, context, onSuccess, onError)
             } else {
                 onError("Usuario no encontrado")
             }
@@ -259,7 +281,7 @@ fun findEmailByUsername(
 
                 val basicInfo = data?.get("basicInfo") as? Map<*, *>
                 val email = basicInfo?.get("email") as? String
-                
+
                 if (email != null && email.isNotEmpty()) {
                     onResult(email)
                 } else {
@@ -319,6 +341,8 @@ fun loginWithEmail(
     email: String,
     password: String,
     auth: FirebaseAuth,
+    rememberSession: Boolean,
+    context: Context,
     onSuccess: () -> Unit,
     onError: (String) -> Unit
 ) {
@@ -326,7 +350,7 @@ fun loginWithEmail(
         onError("Email inválido")
         return
     }
-    
+
     if (password.isEmpty() || password.isBlank()) {
         onError("Contraseña inválida")
         return
@@ -338,6 +362,7 @@ fun loginWithEmail(
                 val user = auth.currentUser
                 if (user != null) {
                     updateLastLogin(user.uid) {
+                        saveSessionPreference(context, rememberSession)
                         onSuccess()
                     }
                 } else {
@@ -348,21 +373,26 @@ fun loginWithEmail(
                 val errorMessage = exception?.message ?: "Error desconocido al iniciar sesión"
 
                 val friendlyError = when {
-                    errorMessage.contains("invalid-email", ignoreCase = true) -> 
+                    errorMessage.contains("invalid-email", ignoreCase = true) ->
                         "El formato del email no es válido"
-                    errorMessage.contains("user-disabled", ignoreCase = true) -> 
+                    errorMessage.contains("user-disabled", ignoreCase = true) ->
                         "Esta cuenta ha sido deshabilitada"
-                    errorMessage.contains("user-not-found", ignoreCase = true) -> 
+                    errorMessage.contains("user-not-found", ignoreCase = true) ->
                         "No existe una cuenta con este email"
-                    errorMessage.contains("wrong-password", ignoreCase = true) -> 
+                    errorMessage.contains("wrong-password", ignoreCase = true) ->
                         "La contraseña es incorrecta"
-                    errorMessage.contains("invalid-credential", ignoreCase = true) -> 
+                    errorMessage.contains("invalid-credential", ignoreCase = true) ->
                         "Email o contraseña incorrectos"
                     else -> "Error al iniciar sesión: $errorMessage"
                 }
                 onError(friendlyError)
             }
         }
+}
+
+fun saveSessionPreference(context: Context, remember: Boolean) {
+    val prefs = context.getSharedPreferences("session_prefs", Context.MODE_PRIVATE)
+    prefs.edit().putBoolean("remember_session", remember).apply()
 }
 
 fun updateLastLogin(
