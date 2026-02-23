@@ -11,6 +11,8 @@ import com.example.cinemiron.domain.common.ApiMapper
 import com.example.cinemiron.domain.models.Movie
 import com.example.cinemiron.domain.models.MovieDetail
 import com.example.cinemiron.domain.repository.MovieRepository
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -29,6 +31,17 @@ object MovieModule {
         coerceInputValues = true
         ignoreUnknownKeys = true
     }
+
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+
 
     @Provides
     @Singleton
