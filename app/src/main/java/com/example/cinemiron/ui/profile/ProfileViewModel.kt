@@ -2,46 +2,118 @@ package com.example.cinemiron.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cinemiron.data.local.models.local.models.UserProfile
 import com.example.cinemiron.domain.models.Movie
-import com.example.cinemiron.domain.repository.FavoritesRepository
+
 import com.example.cinemiron.domain.repository.FavouriteRepository
 import com.example.cinemiron.domain.repository.MovieRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// Si usas Hilt, anota; si no, puedes instanciar manualmente
+
+data class ProfileUiState(
+    val userProfile: UserProfile? = null,
+    val isLoadingProfile: Boolean = false,
+    val isSavingProfile: Boolean = false,
+    val favoriteMovies: List<Movie> = emptyList(),
+    val isLoadingFavorites: Boolean = false,
+    val errorMessage: String? = null
+)
+
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
+    private val userRepository: UserRepository,
     private val favoritesRepository: FavouriteRepository,
     private val movieRepository: MovieRepository,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
-    private val _favouriteIds = MutableStateFlow<List<Int>>(emptyList())
-    val favouriteIds: StateFlow<List<Int>> = _favouriteIds
+    private val _uiState = MutableStateFlow(ProfileUiState())
+    val uiState: StateFlow<ProfileUiState> = _uiState.asStateFlow()
 
-    private val _isLoadingFavorites = MutableStateFlow(false)
-    val isLoadingFavorites: StateFlow<Boolean> = _isLoadingFavorites
+    private val _favoriteIds = MutableStateFlow<List<Int>>(emptyList())
+
+    init {
+        loadUserProfile()
+        loadFavorites()
+    }
+
+    fun loadUserProfile() {
+        val userId = auth.currentUser?.uid ?: return
+        _uiState.update { it.copy(isLoadingProfile = true, errorMessage = null) }
+        viewModelScope.launch {
+            try {
+                val profile = userRepository.loadUserProfile(userId) // Asume función suspend
+                _uiState.update { it.copy(userProfile = profile, isLoadingProfile = false) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoadingProfile = false, errorMessage = e.message) }
+            }
+        }
+    }
+
+    fun updateUserProfile(
+        bio: String,
+        ubicacion: String,
+        fotoUrl: String,
+        perfilPublico: Boolean
+    ) {
+        val userId = auth.currentUser?.uid ?: return
+        _uiState.update { it.copy(isSavingProfile = true, errorMessage = null) }
+        viewModelScope.launch {
+            try {
+                userRepository.updateUserProfileInfo(
+                    userId = userId,
+                    bio = bio,
+                    ubicacion = ubicacion,
+                    fotoUrl = fotoUrl,
+                    perfilPublico = perfilPublico
+                )
+                // Recargar perfil tras guardar
+                loadUserProfile()
+                _uiState.update { it.copy(isSavingProfile = false) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isSavingProfile = false, errorMessage = e.message) }
+            }
+        }
+    }
 
     fun loadFavorites() {
         val userId = auth.currentUser?.uid ?: return
+        _uiState.update { it.copy(isLoadingFavorites = true, errorMessage = null) }
         viewModelScope.launch {
-            _isLoadingFavorites.value = true
             try {
-                val ids = favoritesRepository.getFavoriteIds(userId)
-                // Obtener detalles de cada película en paralelo
+                val ids = favoritesRepository.getFavouriteIds(userId)
+                _favoriteIds.value = ids
                 val movies = ids.map { id ->
-                    async { movieRepository.getMovieDetails(id) }
+                    async { movieRepository.fetchMovieDetail(id) }
                 }.awaitAll()
-                _favoriteMovies.value = movies
+                _uiState.update { it.copy(favoriteMovies = movies, isLoadingFavorites = false) }
             } catch (e: Exception) {
-                // Manejar error
-            } finally {
-                _isLoadingFavorites.value = false
+                _uiState.update { it.copy(isLoadingFavorites = false, errorMessage = e.message) }
+            }
+        }
+    }
+
+    fun toggleFavorite(movieId: Int) {
+        val userId = auth.currentUser?.uid ?: return
+        viewModelScope.launch {
+            try {
+                if (favoritesRepository.isFavourite(userId, movieId)) {
+                    favoritesRepository.removeFavourite(userId, movieId)
+                } else {
+                    favoritesRepository.addFavourite(userId, movieId)
+                }
+                loadFavorites()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(errorMessage = e.message) }
             }
         }
     }
