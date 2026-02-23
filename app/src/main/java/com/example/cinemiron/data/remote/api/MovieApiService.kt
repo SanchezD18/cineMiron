@@ -41,7 +41,7 @@ interface MovieApiService {
         @Query("api_key") apiKey: String = BuildConfig.apikey
     ): MovieVideoResponseDto
 
-    @GET(K.SEARCH_MOVIE_ENPOINT)
+    @GET("${K.SEARCH_MOVIE_ENPOINT}?${K.LANGUAGE}")
     suspend fun fetchSearchMovie(
     @Query("query") movieId: String,
     @Query("api_key") apiKey: String = BuildConfig.apikey,

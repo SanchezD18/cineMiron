@@ -46,6 +46,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.cinemiron.R
 import com.example.cinemiron.data.local.models.local.models.UserBasicInfo
 import com.example.cinemiron.data.local.models.local.models.UserProfile
@@ -53,6 +54,7 @@ import com.example.cinemiron.data.local.models.local.models.UserProfileInfo
 import com.example.cinemiron.data.local.repository.loadUserProfile
 import com.example.cinemiron.data.local.repository.updateUserProfileInfo
 import com.example.cinemiron.ui.components.EditProfileDialog
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -110,16 +112,14 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
                 Arrangement.SpaceBetween,
                 Alignment.CenterVertically
             ) {
-                Surface(
-                    modifier.size(100.dp),
-                    CircleShape,
-                    MaterialTheme.colorScheme.primary
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        val initial = basicInfo.nombre.firstOrNull()?.uppercase() ?: "U"
-                        Text(text = initial, fontSize = 30.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
+                AsyncImage(
+                    model = profileInfo.fotoUrl,
+                    contentDescription = "Foto de perfil",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
                 IconButton(
                     onClick = { showEditDialog = true },
                     modifier = Modifier.size(48.dp)
@@ -387,7 +387,7 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
     }
 }
 
-fun formatDate(timestamp: com.google.firebase.Timestamp?): String {
+fun formatDate(timestamp: Timestamp?): String {
     if (timestamp == null) {
         return "Fecha no disponible"
     }

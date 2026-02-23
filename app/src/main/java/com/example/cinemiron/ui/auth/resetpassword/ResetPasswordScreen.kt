@@ -35,7 +35,6 @@ import androidx.navigation.NavController
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
-private const val TAG = "LoginScreen"
 
 @Composable
 fun ResetPasswordScreen(

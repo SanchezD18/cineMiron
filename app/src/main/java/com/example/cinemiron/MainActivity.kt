@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -147,8 +146,8 @@ class MainActivity : ComponentActivity() {
                     NavHost(
                         navController = navController,
                         startDestination = startDestination,
-                        modifier = Modifier
-                            .fillMaxSize()
+                        modifier = Modifier.fillMaxSize()
+                        .padding(innerPadding)
                     ) {
                         composable("login") {
                             LoginScreen(
@@ -199,11 +198,8 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("review") {
-                            var showDialog by remember { mutableStateOf(false) }
                             ReviewScreen(
-                                navController,
-                                modifier = Modifier.padding(innerPadding),
-                                onAddClick = { showDialog = true }
+                                modifier = Modifier.padding(innerPadding)
                             )
                         }
                         composable("profile") {
