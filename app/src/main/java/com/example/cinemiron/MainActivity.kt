@@ -209,8 +209,7 @@ class MainActivity : ComponentActivity() {
                         composable("profile") {
                             ProfileScreen(
                                 navController,
-                                modifier = Modifier.padding(innerPadding),
-                                auth = auth
+                                modifier = Modifier.padding(innerPadding)
                             )
                         }
                     }

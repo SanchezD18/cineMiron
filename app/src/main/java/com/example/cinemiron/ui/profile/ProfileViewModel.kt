@@ -45,6 +45,8 @@ class ProfileViewModel @Inject constructor(
 
     private val _favoriteIds = MutableStateFlow<List<Int>>(emptyList())
 
+    fun getCurrentUser() = auth.currentUser
+
     init {
         loadUserProfile()
         loadFavorites()
@@ -98,17 +100,16 @@ class ProfileViewModel @Inject constructor(
                 val movies = ids.map { id ->
                     async {
                         try {
-                            movieRepository.fetchMovieDetail(id).first()
+                            val response = movieRepository.fetchMovieDetail(id).first()
+                            when (response) {
+                                is Response.Success -> response.data
+                                else -> null
+                            }
                         } catch (e: Exception) {
                             null
                         }
                     }
-                }.awaitAll().mapNotNull { response ->
-                    when (response) {
-                        is Response.Success -> response.data
-                        else -> null
-                    }
-                }
+                }.awaitAll().filterNotNull()
                 _uiState.update { it.copy(favoriteMovies = movies, isLoadingFavorites = false) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoadingFavorites = false, errorMessage = e.message) }

@@ -16,20 +16,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.example.cinemiron.R
 import com.example.cinemiron.data.local.models.local.models.UserBasicInfo
 import com.example.cinemiron.data.local.models.local.models.UserProfileInfo
 import com.example.cinemiron.ui.components.EditProfileDialog
 import com.example.cinemiron.ui.components.FavCard
-import com.example.cinemiron.ui.components.MovieCard
-import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -37,13 +32,24 @@ import java.util.Locale
 fun ProfileScreen(
     navController: NavController,
     modifier: Modifier,
-    auth: FirebaseAuth,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val scrollState = rememberScrollState()
-    val currentUser = auth.currentUser
+    val currentUser = viewModel.getCurrentUser()
     val uiState by viewModel.uiState.collectAsState()
     var showEditDialog by remember { mutableStateOf(false) }
+
+
+    if (currentUser == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Por favor, inicia sesión para ver tu perfil")
+        }
+        return
+    }
+
 
     // Recargar perfil si cambia el usuario
     LaunchedEffect(currentUser?.uid) {

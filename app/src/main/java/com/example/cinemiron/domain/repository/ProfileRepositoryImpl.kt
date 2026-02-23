@@ -20,6 +20,8 @@ class ProfileRepositoryImpl @Inject constructor(
 
     private val usersCollection = firestore.collection("users")
 
+
+
     override suspend fun loadUserProfile(userId: String): UserProfile? {
         if (userId.isEmpty()) return null
         val document = usersCollection.document(userId).get().await()
