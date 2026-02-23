@@ -2,11 +2,14 @@ package com.example.cinemiron.ui.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cinemiron.core.utils.Response
 import com.example.cinemiron.data.local.models.local.models.UserProfile
 import com.example.cinemiron.domain.models.Movie
+import com.example.cinemiron.domain.models.MovieDetail
 
 import com.example.cinemiron.domain.repository.FavouriteRepository
 import com.example.cinemiron.domain.repository.MovieRepository
+import com.example.cinemiron.domain.repository.ProfileRepository
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
@@ -14,6 +17,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,14 +27,14 @@ data class ProfileUiState(
     val userProfile: UserProfile? = null,
     val isLoadingProfile: Boolean = false,
     val isSavingProfile: Boolean = false,
-    val favoriteMovies: List<Movie> = emptyList(),
+    val favoriteMovies: List<MovieDetail> = emptyList(),
     val isLoadingFavorites: Boolean = false,
     val errorMessage: String? = null
 )
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository,
+    private val profileRepository: ProfileRepository,
     private val favoritesRepository: FavouriteRepository,
     private val movieRepository: MovieRepository,
     private val auth: FirebaseAuth
@@ -51,7 +55,7 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { it.copy(isLoadingProfile = true, errorMessage = null) }
         viewModelScope.launch {
             try {
-                val profile = userRepository.loadUserProfile(userId) // Asume función suspend
+                val profile = profileRepository.loadUserProfile(userId)
                 _uiState.update { it.copy(userProfile = profile, isLoadingProfile = false) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoadingProfile = false, errorMessage = e.message) }
@@ -69,15 +73,14 @@ class ProfileViewModel @Inject constructor(
         _uiState.update { it.copy(isSavingProfile = true, errorMessage = null) }
         viewModelScope.launch {
             try {
-                userRepository.updateUserProfileInfo(
+                profileRepository.updateUserProfileInfo(
                     userId = userId,
                     bio = bio,
                     ubicacion = ubicacion,
                     fotoUrl = fotoUrl,
                     perfilPublico = perfilPublico
                 )
-                // Recargar perfil tras guardar
-                loadUserProfile()
+                loadUserProfile() // Recargar tras guardar
                 _uiState.update { it.copy(isSavingProfile = false) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isSavingProfile = false, errorMessage = e.message) }
@@ -93,8 +96,19 @@ class ProfileViewModel @Inject constructor(
                 val ids = favoritesRepository.getFavouriteIds(userId)
                 _favoriteIds.value = ids
                 val movies = ids.map { id ->
-                    async { movieRepository.fetchMovieDetail(id) }
-                }.awaitAll()
+                    async {
+                        try {
+                            movieRepository.fetchMovieDetail(id).first()
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                }.awaitAll().mapNotNull { response ->
+                    when (response) {
+                        is Response.Success -> response.data
+                        else -> null
+                    }
+                }
                 _uiState.update { it.copy(favoriteMovies = movies, isLoadingFavorites = false) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isLoadingFavorites = false, errorMessage = e.message) }

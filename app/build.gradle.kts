@@ -82,7 +82,7 @@ dependencies {
 
     //Serializacion
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     
     // Lifecycle para ViewModel en Compose

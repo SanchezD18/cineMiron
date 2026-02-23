@@ -13,6 +13,8 @@ import com.example.cinemiron.domain.models.MovieDetail
 import com.example.cinemiron.domain.repository.FavoritesRepositoryImpl
 import com.example.cinemiron.domain.repository.FavouriteRepository
 import com.example.cinemiron.domain.repository.MovieRepository
+import com.example.cinemiron.domain.repository.ProfileRepository
+import com.example.cinemiron.domain.repository.ProfileRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
@@ -52,6 +54,13 @@ object MovieModule {
         return FavoritesRepositoryImpl(firestore)
     }
 
+    @Provides
+    @Singleton
+    fun provideProfileRepository(
+        firestore: FirebaseFirestore
+    ): ProfileRepository {
+        return ProfileRepositoryImpl(firestore)
+    }
 
     @Provides
     @Singleton

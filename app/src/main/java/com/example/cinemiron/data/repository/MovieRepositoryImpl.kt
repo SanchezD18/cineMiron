@@ -80,4 +80,15 @@ class MovieRepositoryImpl(
     }.catch { e ->
         emit(Response.Error(e))
     }
+
+    override fun fetchMovieById(movieId: Int): Flow<Response<MovieDetail>> = flow {
+        emit(Response.Loading())
+        val movieDetailDto = movieApiService.fetchMovieDetail(movieId)
+        val movieDetail = movieDetailMapper.mapToDomain(movieDetailDto)
+        emit(Response.Success(movieDetail))
+    }.catch { e ->
+        emit(Response.Error(e))
+    }
+
+
 }

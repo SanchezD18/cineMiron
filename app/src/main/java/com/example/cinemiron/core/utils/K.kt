@@ -13,4 +13,6 @@ object K {
     const val UPCOMING_MOVIE_ENDPOINT ="movie/upcoming"
 
     const val SEARCH_MOVIE_ENPOINT ="search/movie"
+
+    const val FIND_MOVIE_BY_ID = "find/"
 }

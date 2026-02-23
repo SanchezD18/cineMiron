@@ -3,11 +3,13 @@ package com.example.cinemiron.domain.repository
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
 
+@Singleton
 class FavoritesRepositoryImpl @Inject constructor(
     private val firestore: FirebaseFirestore
 ) : FavouriteRepository {
