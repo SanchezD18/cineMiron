@@ -1,6 +1,5 @@
 package com.example.cinemiron
 
-import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -34,16 +32,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.cinemiron.ui.components.BottomNavBar
-import com.example.cinemiron.ui.components.SettingsDialog
 import com.example.cinemiron.ui.auth.login.LoginScreen
 import com.example.cinemiron.ui.auth.register.RegisterScreen
 import com.example.cinemiron.ui.auth.resetpassword.ResetPasswordScreen
+import com.example.cinemiron.ui.components.BottomNavBar
+import com.example.cinemiron.ui.components.SettingsDialog
 import com.example.cinemiron.ui.home.HomeScreen
-import com.example.cinemiron.ui.search.SearchScreen
 import com.example.cinemiron.ui.profile.ProfileScreen
 import com.example.cinemiron.ui.review.ReviewScreen
 import com.example.cinemiron.ui.screens.FilmInfoAPI
+import com.example.cinemiron.ui.search.SearchScreen
 import com.example.cinemiron.ui.theme.CineMironTheme
 import com.example.cinemiron.ui.theme.ColorSchemeOption
 import com.google.firebase.Firebase

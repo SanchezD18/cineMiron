@@ -1,10 +1,10 @@
 package com.example.cinemiron.data.remote.api
 
 import com.example.cinemiron.BuildConfig
+import com.example.cinemiron.core.utils.K
 import com.example.cinemiron.data.remote.models.MovieDetailDTO
 import com.example.cinemiron.data.remote.models.MovieDto
 import com.example.cinemiron.data.remote.models.MovieVideoResponseDto
-import com.example.cinemiron.core.utils.K
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

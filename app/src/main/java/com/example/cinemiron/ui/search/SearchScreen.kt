@@ -2,7 +2,6 @@ package com.example.cinemiron.ui.search
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,11 +46,6 @@ import com.example.cinemiron.ui.components.UserSearchCard
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
-import kotlin.collections.forEach
-import kotlin.text.contains
-import kotlin.text.isEmpty
-import kotlin.text.isNotEmpty
-import kotlin.text.lowercase
 
 @Composable
 fun SearchScreen(navController: NavController, modifier: Modifier = Modifier) {
