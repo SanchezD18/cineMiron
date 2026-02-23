@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -51,12 +52,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.cinemiron.core.utils.K
 import com.example.cinemiron.domain.models.MovieDetail
 import com.example.cinemiron.ui.movie.detail.FilmInfoState
 import com.example.cinemiron.ui.movie.detail.MovieDetailViewModel
+import com.example.cinemiron.ui.review.AddReviewDialog
+import com.example.cinemiron.ui.review.ReviewViewModel
 import com.example.cinemiron.ui.theme.Primary
 import java.text.NumberFormat
 import java.util.Locale
@@ -67,11 +71,9 @@ fun FilmInfoAPI(navController: NavController, modifier: Modifier = Modifier, mov
     val filmInfoState by viewModel.filmInfoState.collectAsStateWithLifecycle()
 
     LaunchedEffect(movieId) {
-        movieId?.let { id ->
-            viewModel.fetchMovieDetail(id)
-        }
+        movieId?.let { viewModel.fetchMovieDetail(it) }
     }
-    
+
     FilmInfoContentAPI(
         modifier = modifier,
         navController = navController,
@@ -88,9 +90,7 @@ fun FilmInfoContentAPI(
     when {
         filmInfoState.isLoading && filmInfoState.movieDetail == null -> {
             Box(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
+                modifier = modifier.fillMaxSize().padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -98,9 +98,7 @@ fun FilmInfoContentAPI(
         }
         filmInfoState.error != null -> {
             Box(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
+                modifier = modifier.fillMaxSize().padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -124,13 +122,15 @@ fun TopFilmColumnAPI(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberLazyListState()
-    val backdropUrl = if (!movieDetail.backdrop_path.isNullOrEmpty()) {
+    val backdropUrl = if (movieDetail.backdrop_path.isNotEmpty()) {
         "${K.BASE_IMAGE_URL}${movieDetail.backdrop_path}"
     } else null
-
     val backgroundColor = MaterialTheme.colorScheme.background
 
-    Column(modifier = modifier.fillMaxSize()) {
+    var showReviewDialog by remember { mutableStateOf(false) }
+    val reviewViewModel: ReviewViewModel = viewModel()
+
+    Column(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -163,7 +163,10 @@ fun TopFilmColumnAPI(
                 )
             }
 
-            TopFilmInfoAPI(movieDetail)
+            TopFilmInfoAPI(
+                movieDetail = movieDetail,
+                onAddReviewClick = { showReviewDialog = true }
+            )
         }
 
         LazyColumn(
@@ -195,9 +198,7 @@ fun TopFilmColumnAPI(
                     )
                 }
                 RatingRowAPI(movieDetail.vote_average)
-                DescriptionRowAPI(
-                    movieDetail.overview
-                )
+                DescriptionRowAPI(movieDetail.overview)
             }
             item {
                 HorizontalDivider(
@@ -207,19 +208,30 @@ fun TopFilmColumnAPI(
                 )
             }
         }
+
+        if (showReviewDialog) {
+            AddReviewDialog(
+                movieId = movieDetail.id,
+                movieTitle = movieDetail.title,
+                moviePosterPath = movieDetail.poster_path,
+                reviewViewModel = reviewViewModel,
+                onDismiss = { showReviewDialog = false }
+            )
+        }
     }
 }
 
 @Composable
-fun TopFilmInfoAPI(movieDetail: MovieDetail) {
+fun TopFilmInfoAPI(
+    movieDetail: MovieDetail,
+    onAddReviewClick: () -> Unit
+) {
     val imageUrl = "${K.BASE_IMAGE_URL}${movieDetail.poster_path}"
     val genresText = movieDetail.genres.joinToString(", ") { it.name }
     val year = movieDetail.release_date.take(4)
     val runtimeText = "${movieDetail.runtime} mins"
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Row(
             Modifier
                 .fillMaxWidth()
@@ -239,10 +251,11 @@ fun TopFilmInfoAPI(movieDetail: MovieDetail) {
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.9f)
                 )
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier.padding(vertical = 4.dp)
                 ) {
                     TrailerButtonAPI(
                         movieId = movieDetail.id,
@@ -255,6 +268,21 @@ fun TopFilmInfoAPI(movieDetail: MovieDetail) {
                     )
                 }
 
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Button(
+                    onClick = onAddReviewClick,
+                    modifier = Modifier.height(28.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
+                ) {
+                    Icon(
+                        Icons.Default.RateReview,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Reseña", style = MaterialTheme.typography.labelSmall)
+                }
             }
             AsyncImage(
                 model = imageUrl,
@@ -279,7 +307,6 @@ fun TrailerButtonAPI(
     Button(
         onClick = {
             viewModel.fetchTrailer(movieId) { key ->
-
                 val intent = Intent(
                     Intent.ACTION_VIEW,
                     Uri.parse("https://www.youtube.com/watch?v=$key")
@@ -298,7 +325,6 @@ fun TrailerButtonAPI(
         }
     }
 }
-
 
 @Composable
 fun DescriptionRowAPI(description: String) {
@@ -320,27 +346,15 @@ fun DescriptionRowAPI(description: String) {
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.clickable { expanded = !expanded }
         )
-        if (!expanded) {
-            Text(
-                "Ver más...",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .clickable { expanded = !expanded }
-            )
-        } else {
-            Text(
-                "Mostrar menos.",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .clickable { expanded = !expanded }
-            )
-        }
+        Text(
+            text = if (expanded) "Mostrar menos." else "Ver más...",
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .clickable { expanded = !expanded }
+        )
     }
-
 }
 
 @Composable
@@ -367,7 +381,7 @@ fun RatingColumnAPI(ratingValue: Double) {
             color = MaterialTheme.colorScheme.onSurface
         )
         StarRatingBarAPI(
-            rating = ratingValue / 2.0, // Convertir de 10 a escala de 5
+            rating = ratingValue / 2.0,
             maxStars = 5,
             starSize = 40.dp,
             activeColor = Color.Yellow,
@@ -395,7 +409,6 @@ fun StarRatingBarAPI(
                 rating > i - 1 -> rating - (i - 1)
                 else -> 0.0
             }
-
             StarIconAPI(
                 fillRatio = starRating,
                 size = starSize,
@@ -423,7 +436,6 @@ fun StarIconAPI(
             tint = inactiveColor,
             modifier = Modifier.size(size)
         )
-
         Icon(
             imageVector = Icons.Default.Star,
             contentDescription = null,
@@ -451,7 +463,6 @@ fun StarIconAPI(
 fun ProfitLossText(budget: Int, revenue: Int) {
     val result = revenue - budget
     val isProfit = result >= 0
-
     val label = if (isProfit) "Beneficios" else "Pérdidas"
     val color = if (isProfit) Color(0xFF2E7D32) else Color(0xFFC62828)
 

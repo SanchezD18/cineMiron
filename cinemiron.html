@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>cineMirón - Tu cine, tu comunidad</title>
+    <style>
+        /* 
+           FUENTE DE DATOS Y ESTILOS:
+           Basado en la Guía de Estilos del Documento [1] y [2].
+        */
+
+        :root {
+            /* Paleta: "Colores verdes azulados" y "Fondos amarillos grisáceos" [1] */
+            --primary-teal: #2A6F6F; 
+            --secondary-green: #5C8A8A;
+            --background-warm: #F2F0E6; 
+            --card-bg: #E0E5E0;
+            --nav-blue: #1A2C40; /* Barra de navegación azul oscuro [2] */
+            --text-dark: #1F2F2F;
+            --accent-gold: #D4AF37; /* Para estrellas de reseñas [5] */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            /* Tipografía: Proxima Nova para títulos, Faculty Glyphic para textos [2] */
+            font-family: 'Faculty Glyphic', sans-serif; 
+            background-color: var(--background-warm);
+            color: var(--text-dark);
+            line-height: 1.6;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Proxima Nova', sans-serif;
+            color: var(--primary-teal);
+        }
+
+        /* NAVBAR [1, 2] */
+        .navbar {
+            background-color: var(--nav-blue);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            font-family: 'Ebbe', serif; /* Subtítulos/Logos [2] */
+        }
+
+        /* HERO SECTION - Animación de entrada */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--card-bg) 0%, var(--background-warm) 100%);
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            color: var(--nav-blue);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto 2rem auto;
+        }
+
+        .cta-button {
+            background-color: var(--primary-teal);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: transform 0.3s, background-color 0.3s;
+            display: inline-block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            background-color: var(--secondary-green);
+        }
+
+        /* FEATURES SECTION [3, 4] */
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            padding: 3rem 2rem;
+        }
+
+        .card {
+            background-color: white; /* Tarjetas limpias */
+            border: 1px solid #c0cbb1; /* Bordes discretos [2] */
+            border-radius: 15px;
+            padding: 2rem;
+            width: 300px;
+            text-align: center;
+            transition: transform 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-teal);
+        }
+
+        .card-icon {
+            font-size: 2.5rem;
+            color: var(--primary-teal);
+            margin-bottom: 1rem;
+        }
+
+        /* SECTION: APP PREVIEW (MOCKUP PLACEHOLDER) [6] */
+        .preview {
+            background-color: var(--nav-blue);
+            color: white;
+            text-align: center;
+            padding: 3rem 1rem;
+        }
+        
+        .mockup-placeholder {
+            max-width: 800px;
+            height: 300px;
+            background-color: rgba(255,255,255,0.1);
+            margin: 2rem auto;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--secondary-green);
+        }
+
+        /* FOOTER [7, 8] */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.9rem;
+            color: #666;
+            border-top: 1px solid #ddd;
+        }
+
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- NAV: Estilo azul oscuro según Guía [2] -->
+    <nav class="navbar">
+        <div class="logo">cineMirón</div>
+        <div>
+            <!-- Links a secciones clave [5] -->
+            <a href="#" style="color:white; margin-right: 15px; text-decoration:none;">Inicio</a>
+            <a href="#" style="color:white; margin-right: 15px; text-decoration:none;">Catálogo</a>
+            <a href="#" style="color:white; text-decoration:none;">Perfil</a>
+        </div>
+    </nav>
+
+    <!-- HERO: Propuesta de valor [4, 9] -->
+    <header class="hero">
+        <h1>El cine, sin filtros.</h1>
+        <p>
+            Únete a la comunidad auténtica. Unifica tu catálogo, descubre películas con la API de TMDb y comparte reseñas reales sin patrocinadores.
+        </p>
+        <!-- CTA: Modelo Freemium/Pro [10] -->
+        <a href="#" class="cta-button">Descargar Gratis en Android</a>
+        <p style="font-size: 0.8rem; margin-top: 10px;">Versión Pro disponible sin anuncios</p>
+    </header>
+
+    <!-- FEATURES: Los 4 pilares [3, 4] -->
+    <section class="features">
+        <div class="card">
+            <div class="card-icon">📱</div>
+            <h3>Usabilidad Intuitiva</h3>
+            <p>Interfaz moderna y ligera diseñada específicamente para una navegación fluida en tu móvil.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">💬</div>
+            <h3>Comunidad Auténtica</h3>
+            <p>Reseñas libres de 0 a 5 estrellas. Sin patrocinadores, solo opiniones reales de usuarios como tú.</p>
+        </div>
+        <div class="card">
+            <div class="card-icon">🎬</div>
+            <h3>Catálogo Total</h3>
+            <p>Integración completa con TMDb. Gestiona tus favoritos, listas y descubre qué ver hoy.</p>
+        </div>
+    </section>
+
+    <!-- PREVIEW: Referencia al Mockup y Funciones [5, 6] -->
+    <section class="preview">
+        <h2 style="color:white;">Tu ecosistema integral</h2>
+        <p>Búsqueda con filtros, modo oscuro y estadísticas personales.</p>
+        <div class="mockup-placeholder">
+            <p>[Espacio para Mockup de App Android - Ver Anexo 8.2]</p>
+        </div>
+    </section>
+
+    <!-- FOOTER: Autores y Licencia [7, 8] -->
+    <footer>
+        <p><strong>Desarrollado por el equipo Tubercúlos:</strong></p>
+        <p>Álvaro García Mon • Marc Gozalbo Royo • Ion Ander León Alcayne • David Sánchez Máñez</p>
+        <br>
+        <p>Licencia Creative Commons Atribución-CompartirIgual 4.0 Internacional.</p>
+        <p>Datos proporcionados por <a href="https://www.themoviedb.org/" style="color:var(--primary-teal)">TMDb</a>.</p>
+    </footer>
+
+</body>
+</html>

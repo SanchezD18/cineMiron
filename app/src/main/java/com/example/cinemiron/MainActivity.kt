@@ -32,16 +32,16 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.cinemiron.ui.components.BottomNavBar
+import com.example.cinemiron.ui.components.SettingsDialog
 import com.example.cinemiron.ui.auth.login.LoginScreen
 import com.example.cinemiron.ui.auth.register.RegisterScreen
 import com.example.cinemiron.ui.auth.resetpassword.ResetPasswordScreen
-import com.example.cinemiron.ui.components.BottomNavBar
-import com.example.cinemiron.ui.components.SettingsDialog
 import com.example.cinemiron.ui.home.HomeScreen
+import com.example.cinemiron.ui.search.SearchScreen
 import com.example.cinemiron.ui.profile.ProfileScreen
 import com.example.cinemiron.ui.review.ReviewScreen
 import com.example.cinemiron.ui.screens.FilmInfoAPI
-import com.example.cinemiron.ui.search.SearchScreen
 import com.example.cinemiron.ui.theme.CineMironTheme
 import com.example.cinemiron.ui.theme.ColorSchemeOption
 import com.google.firebase.Firebase
@@ -59,158 +59,135 @@ class MainActivity : ComponentActivity() {
         auth = Firebase.auth
         enableEdgeToEdge()
         setContent {
+                val routeTitles = mapOf(
+                    "home" to "Inicio",
+                    "search" to "Buscar",
+                    "popular" to "Populares",
+                    "filminfo" to "Información",
+                    "review" to "Reseñas",
+                    "profile" to "Perfil",
+                    "login" to "Iniciar Sesión",
+                    "register" to "Registrarse"
+                )
+                val navController = rememberNavController()
+                val startDestination = "login"
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+                val currentTitle = routeTitles[currentRoute] ?: "cineMirón"
+                val hiddenRoutes = listOf("login", "register", "resetpassword")
+                var showSettingsDialog by remember { mutableStateOf(false) }
+                var isDarkTheme by remember { mutableStateOf(false) }
+                var selectedColorScheme by remember { mutableStateOf(ColorSchemeOption.VERDE) }
 
-            val prefs = getSharedPreferences("user_prefs", MODE_PRIVATE)
-            val rememberSession = prefs.getBoolean("remember_session", false)
-
-            val startDestination =
-                if (auth.currentUser != null && rememberSession) {
-                    "home"
-                } else {
-                    "login"
-                }
-
-
-            val navController = rememberNavController()
-
-            val routeTitles = mapOf(
-                "home" to "Inicio",
-                "search" to "Buscar",
-                "popular" to "Populares",
-                "filminfo" to "Información",
-                "review" to "Reseñas",
-                "profile" to "Perfil",
-                "login" to "Iniciar Sesión",
-                "register" to "Registrarse"
-            )
-
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route
-            val currentTitle = routeTitles[currentRoute] ?: "cineMirón"
-            val hiddenRoutes = listOf("login", "register", "resetpassword")
-
-            var showSettingsDialog by remember { mutableStateOf(false) }
-            var isDarkTheme by remember { mutableStateOf(false) }
-            var selectedColorScheme by remember { mutableStateOf(ColorSchemeOption.VERDE) }
-
-            CineMironTheme(
-                darkTheme = isDarkTheme,
-                colorSchemeOption = selectedColorScheme
-            ) {
-
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
+                CineMironTheme(
+                    darkTheme = isDarkTheme,
+                    colorSchemeOption = selectedColorScheme
+                ) {
+                Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
                         TopAppBar(
                             title = {
-                                Row(
-                                    Modifier.fillMaxWidth(),
+                                Row(Modifier.fillMaxWidth(),
                                     Arrangement.SpaceBetween,
-                                    Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = currentTitle,
-                                        style = MaterialTheme.typography.titleLarge
-                                    )
-
+                                    Alignment.CenterVertically) {
+                                Text(text = currentTitle,
+                                    style = MaterialTheme.typography.titleLarge)
                                     if (!hiddenRoutes.contains(currentRoute)) {
-                                        IconButton(onClick = { showSettingsDialog = true }) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Settings,
-                                                contentDescription = "Configuración",
-                                                tint = MaterialTheme.colorScheme.primary
-                                            )
-                                        }
-                                    }
-                                }
-
+                                    IconButton(
+                                    onClick = {showSettingsDialog = true}
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Settings,
+                                        contentDescription = "Configuración",
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                } }}
                                 if (showSettingsDialog) {
                                     SettingsDialog(
                                         onDismiss = { showSettingsDialog = false },
                                         initialDarkTheme = isDarkTheme,
                                         initialColorScheme = selectedColorScheme,
-                                        onThemeChanged = { isDarkTheme = it },
-                                        onColorSchemeChanged = { selectedColorScheme = it },
+                                        onThemeChanged = { newValue ->
+                                            isDarkTheme = newValue
+                                        },
+                                        onColorSchemeChanged = { newScheme ->
+                                            selectedColorScheme = newScheme
+                                        },
                                         onLogout = {
                                             auth.signOut()
-
-                                            val prefs = getSharedPreferences("user_prefs", MODE_PRIVATE)
-                                            prefs.edit().putBoolean("remember_session", false).apply()
-
                                             navController.navigate("login") {
                                                 popUpTo(0) { inclusive = true }
                                             }
                                         }
-
                                     )
                                 }
-                            }
+                                    },
                         )
                     },
                     bottomBar = {
                         if (!hiddenRoutes.contains(currentRoute)) {
-                            BottomNavBar(navController = navController, currentRoute)
+                            BottomNavBar(navController = navController,
+                                currentRoute)
                         }
                     },
                     floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = { navController.popBackStack() },
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver"
-                            )
+                            FloatingActionButton(
+                                onClick = { navController.popBackStack() },
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Añadir favorito."
+                                )
+                            }
                         }
-                    }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
                         startDestination = startDestination,
                         modifier = Modifier.fillMaxSize()
+                        .padding(innerPadding)
                     ) {
                         composable("login") {
-                            LoginScreen(navController,
-                                Modifier.padding(
-                                    innerPadding
-                                ), auth
+                            LoginScreen(
+                                navController,
+                                modifier = Modifier.padding(innerPadding),
+                                auth = auth
                             )
                         }
                         composable("register") {
-                            RegisterScreen(navController,
-                                Modifier.padding(
-                                    innerPadding
-                                ), auth
+                            RegisterScreen(
+                                navController,
+                                modifier = Modifier.padding(innerPadding),
+                                auth
                             )
                         }
                         composable("resetpassword") {
-                            ResetPasswordScreen(navController,
-                                Modifier.padding(
-                                    innerPadding
-                                ), auth
+                            ResetPasswordScreen(
+                                navController,
+                                modifier = Modifier.padding(innerPadding),
+                                auth
                             )
                         }
                         composable("home") {
                             HomeScreen(
                                 navController,
-                                Modifier.padding(
-                                    innerPadding
-                                )
+                                modifier = Modifier.padding(innerPadding)
                             )
                         }
                         composable("search") {
                             SearchScreen(
                                 navController,
-                                Modifier.padding(
-                                    innerPadding
-                                )
+                                modifier = Modifier.padding(innerPadding)
                             )
                         }
                         composable(
                             route = "filminfo/{movieId}",
                             arguments = listOf(
-                                navArgument("movieId") { type = NavType.IntType }
+                                navArgument("movieId") {
+                                    type = NavType.IntType
+                                }
                             )
                         ) { backStackEntry ->
                             val movieId = backStackEntry.arguments?.getInt("movieId")
@@ -222,23 +199,20 @@ class MainActivity : ComponentActivity() {
                         }
                         composable("review") {
                             ReviewScreen(
-                                navController,
-                                Modifier.padding(innerPadding),
-                                onAddClick = {}
+                                modifier = Modifier.padding(innerPadding)
                             )
                         }
                         composable("profile") {
                             ProfileScreen(
                                 navController,
-                                Modifier.padding(innerPadding),
+                                modifier = Modifier.padding(innerPadding),
                                 auth = auth
                             )
                         }
                     }
                 }
+                }
             }
         }
-
-    }
 }
 
