@@ -10,6 +10,8 @@ import com.example.cinemiron.data.repository.MovieRepositoryImpl
 import com.example.cinemiron.domain.common.ApiMapper
 import com.example.cinemiron.domain.models.Movie
 import com.example.cinemiron.domain.models.MovieDetail
+import com.example.cinemiron.domain.repository.FavoritesRepositoryImpl
+import com.example.cinemiron.domain.repository.FavouriteRepository
 import com.example.cinemiron.domain.repository.MovieRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -41,6 +43,14 @@ object MovieModule {
     @Singleton
     fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
 
+
+    @Provides
+    @Singleton
+    fun provideFavouriteRepository(
+        firestore: FirebaseFirestore
+    ): FavouriteRepository {
+        return FavoritesRepositoryImpl(firestore)
+    }
 
 
     @Provides
