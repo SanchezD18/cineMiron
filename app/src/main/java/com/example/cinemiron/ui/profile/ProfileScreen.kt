@@ -1,7 +1,6 @@
 package com.example.cinemiron.ui.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -21,31 +19,43 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.cinemiron.R
 import com.example.cinemiron.data.local.models.local.models.UserBasicInfo
 import com.example.cinemiron.data.local.models.local.models.UserProfileInfo
+import com.example.cinemiron.data.local.repository.ReviewRepository
 import com.example.cinemiron.ui.components.EditProfileDialog
 import com.example.cinemiron.ui.components.FavCard
-import com.example.cinemiron.data.local.repository.ReviewRepository
-import com.example.cinemiron.data.local.repository.loadUserProfile
-import com.example.cinemiron.data.local.repository.updateUserProfileInfo
-import com.example.cinemiron.ui.components.EditProfileDialog
 import com.google.firebase.Timestamp
-import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -65,56 +75,45 @@ fun ProfileScreen(
     var moviesWatched by remember { mutableStateOf<Int?>(null) }
     var averageRating by remember { mutableStateOf<Double?>(null) }
 
-    LaunchedEffect(currentUser?.uid) {
-        val userId = currentUser?.uid
-        if (userId != null) {
-            isLoading = true
-            loadUserProfile(
-                userId = userId,
-                onSuccess = { profile ->
-                    userProfile = profile
-                    isLoading = false
-                },
-                onError = { exception ->
-                    isLoading = false
-                }
-            )
-
-            ReviewRepository.getReviewsByUser(
-                userId = userId,
-                onSuccess = { reviews ->
-                    totalReviews = reviews.size
-                    totalLikes = reviews.sumOf { it.likes }
-                    moviesWatched = reviews.map { it.movieId }.toSet().size
-                    averageRating = if (reviews.isNotEmpty()) {
-                        reviews.map { it.rating }.average()
-                    } else {
-                        null
-                    }
-                },
-                onError = {
-                    totalReviews = null
-                    totalLikes = null
-                    moviesWatched = null
-                    averageRating = null
-                }
-            )
-        } else {
-            isLoading = false
+    if (currentUser == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Por favor, inicia sesión para ver tu perfil")
         }
         return
     }
 
-
-    // Recargar perfil si cambia el usuario
-    LaunchedEffect(currentUser?.uid) {
+    LaunchedEffect(currentUser.uid) {
         viewModel.loadUserProfile()
         viewModel.loadFavorites()
+
+        ReviewRepository.getReviewsByUser(
+            userId = currentUser.uid,
+            onSuccess = { reviews ->
+                totalReviews = reviews.size
+                totalLikes = reviews.sumOf { it.likes }
+                moviesWatched = reviews.map { it.movieId }.toSet().size
+                averageRating = if (reviews.isNotEmpty()) {
+                    reviews.map { it.rating }.average()
+                } else {
+                    null
+                }
+            },
+            onError = {
+                totalReviews = null
+                totalLikes = null
+                moviesWatched = null
+                averageRating = null
+            }
+        )
     }
 
     Column(
-        modifier = modifier
-            .padding(20.dp)
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(10.dp)
             .verticalScroll(scrollState)
     ) {
         when {
@@ -124,89 +123,41 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .padding(32.dp),
                     contentAlignment = Alignment.Center
-        Modifier.fillMaxSize()
-            .padding(20.dp)
-            .verticalScroll(scrollState)
-    ) {
-
-        if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
-        } else {
-            val profile = userProfile
-            val basicInfo = profile?.basicInfo ?: UserBasicInfo()
-            val profileInfo = profile?.profileInfo ?: UserProfileInfo()
-
-            Row(
-                Modifier.fillMaxSize(),
-                Arrangement.SpaceBetween,
-                Alignment.CenterVertically
-            ) {
-                AsyncImage(
-                    model = profileInfo.fotoUrl,
-                    contentDescription = "Foto de perfil",
-                    modifier = Modifier
-                        .size(100.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop
-                )
-                IconButton(
-                    onClick = { showEditDialog = true },
-                    modifier = Modifier.size(48.dp)
                 ) {
                     CircularProgressIndicator()
                 }
             }
+
             else -> {
                 val profile = uiState.userProfile
                 val basicInfo = profile?.basicInfo ?: UserBasicInfo()
                 val profileInfo = profile?.profileInfo ?: UserProfileInfo()
 
-                // Cabecera con avatar y botón editar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Surface(
-                        modifier = Modifier.size(100.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            val initial = basicInfo.nombre.firstOrNull()?.uppercase() ?: "U"
-                            Text(
-                                text = (totalReviews ?: 0).toString(),
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
+                    AsyncImage(
+                        model = uiState.userProfile?.profileInfo?.fotoUrl,
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier.size(100.dp)
+                            .clip(RoundedCornerShape(100.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+
                     IconButton(
                         onClick = { showEditDialog = true },
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Favorite,
-                            contentDescription = "Reseñas",
-                            tint = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.size(16.dp)
-                        )
-                        Text(
-                                text = (totalLikes ?: 0).toString(),
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.error
+                            imageVector = Icons.Filled.Edit,
+                            contentDescription = "Editar perfil",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
                 }
 
-                // Info básica
                 Column {
                     Text(
                         text = basicInfo.nombre.ifEmpty { "Usuario" },
@@ -230,21 +181,20 @@ fun ProfileScreen(
 
                 Spacer(modifier = Modifier.size(20.dp))
 
-                // Estadísticas rápidas
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     StatItem(
                         icon = Icons.Filled.Star,
-                        value = "12", // TODO: conectar con repositorio de reseñas
+                        value = (totalReviews ?: 0).toString(),
                         label = "Reseñas",
                         tint = MaterialTheme.colorScheme.primary
                     )
                     StatItem(
                         icon = Icons.Filled.Favorite,
-                        value = uiState.favoriteMovies.size.toString(),
-                        label = "Favoritos",
+                        value = (totalLikes ?: 0).toString(),
+                        label = "Likes",
                         tint = MaterialTheme.colorScheme.error
                     )
                     StatItem(
@@ -256,33 +206,8 @@ fun ProfileScreen(
                     )
                 }
 
-                // Géneros favoritos (estáticos por ahora)
-                Text(
-                    text = "Estadísticas:",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                Row(
-                    modifier = Modifier.padding(12.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = (totalReviews ?: 0).toString(),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Reseñas totales",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                }
+                Spacer(modifier = Modifier.size(16.dp))
 
-                // Películas favoritas
                 Text(
                     text = "Películas favoritas:",
                     style = MaterialTheme.typography.bodyMedium.copy(
@@ -308,41 +233,16 @@ fun ProfileScreen(
                         items(uiState.favoriteMovies) { movie ->
                             FavCard(movie, navController)
                         }
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = (moviesWatched ?: 0).toString(),
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Películas vistas",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = averageRating?.let { String.format(Locale("es", "ES"), "%.1f", it) } ?: "-",
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = "Nota promedio",
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.size(20.dp))
 
-                // Más estadísticas (totales)
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
                     Row(
                         modifier = Modifier
@@ -352,7 +252,7 @@ fun ProfileScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "3", // TODO: conectar con reseñas
+                                text = (totalReviews ?: 0).toString(),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -366,7 +266,7 @@ fun ProfileScreen(
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "15", // TODO: películas vistas
+                                text = (moviesWatched ?: 0).toString(),
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -380,7 +280,9 @@ fun ProfileScreen(
 
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "4.2", // TODO: nota promedio
+                                text = averageRating?.let {
+                                    String.format(Locale("es", "ES"), "%.1f", it)
+                                } ?: "-",
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -397,7 +299,6 @@ fun ProfileScreen(
         }
     }
 
-    // Diálogo de edición
     if (showEditDialog && uiState.userProfile != null) {
         EditProfileDialog(
             onDismiss = { showEditDialog = false },
@@ -416,17 +317,6 @@ fun ProfileScreen(
             initialPerfilPublico = uiState.userProfile?.profileInfo?.perfilPublico ?: false,
             isLoading = uiState.isSavingProfile
         )
-fun formatDate(timestamp: Timestamp?): String {
-    if (timestamp == null) {
-        return "Fecha no disponible"
-    }
-    return try {
-        val date = timestamp.toDate()
-        val format = SimpleDateFormat("MMMM yyyy", Locale("es", "ES"))
-        val formatted = format.format(date)
-        formatted
-    } catch (e: Exception) {
-        "Fecha no disponible"
     }
 }
 
@@ -435,7 +325,7 @@ fun StatItem(
     icon: ImageVector,
     value: String,
     label: String,
-    tint: androidx.compose.ui.graphics.Color,
+    tint: Color,
     isDate: Boolean = false
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -488,7 +378,7 @@ fun SimpleChip(text: String) {
     }
 }
 
-fun formatDate(timestamp: com.google.firebase.Timestamp?): String {
+fun formatDate(timestamp: Timestamp?): String {
     if (timestamp == null) return "Fecha no disponible"
     return try {
         val date = timestamp.toDate()

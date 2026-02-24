@@ -105,7 +105,6 @@ fun MainPagerScreen(
                 MainPage.Profile -> ProfileScreen(
                     navController = navController,
                     modifier = Modifier,
-                    auth = auth
                 )
             }
         }

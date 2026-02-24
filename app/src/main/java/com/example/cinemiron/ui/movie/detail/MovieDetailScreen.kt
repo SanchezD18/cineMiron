@@ -2,6 +2,7 @@ package com.example.cinemiron.ui.screens
 
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -212,7 +213,8 @@ fun TopFilmColumnAPI(
                 }
             }
 
-            TopFilmInfoAPI(movieDetail, viewModel)
+            TopFilmInfoAPI(movieDetail, viewModel,
+                onAddReviewClick = { showReviewDialog = true })
         }
 
         LazyColumn(
@@ -302,7 +304,7 @@ fun TopFilmColumnAPI(
 @Composable
 fun TopFilmInfoAPI(
     movieDetail: MovieDetail,
-    viewModel: MovieDetailViewModel
+    viewModel: MovieDetailViewModel,
     onAddReviewClick: () -> Unit
 ) {
     val imageUrl = "${K.BASE_IMAGE_URL}${movieDetail.poster_path}"
