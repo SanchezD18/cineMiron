@@ -2,6 +2,18 @@ package com.example.cinemiron.ui.profile
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -21,10 +33,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.example.cinemiron.R
 import com.example.cinemiron.data.local.models.local.models.UserBasicInfo
 import com.example.cinemiron.data.local.models.local.models.UserProfileInfo
 import com.example.cinemiron.ui.components.EditProfileDialog
 import com.example.cinemiron.ui.components.FavCard
+import com.example.cinemiron.data.local.repository.ReviewRepository
+import com.example.cinemiron.data.local.repository.loadUserProfile
+import com.example.cinemiron.data.local.repository.updateUserProfileInfo
+import com.example.cinemiron.ui.components.EditProfileDialog
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -39,13 +60,47 @@ fun ProfileScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showEditDialog by remember { mutableStateOf(false) }
 
+    var totalReviews by remember { mutableStateOf<Int?>(null) }
+    var totalLikes by remember { mutableStateOf<Int?>(null) }
+    var moviesWatched by remember { mutableStateOf<Int?>(null) }
+    var averageRating by remember { mutableStateOf<Double?>(null) }
 
-    if (currentUser == null) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("Por favor, inicia sesión para ver tu perfil")
+    LaunchedEffect(currentUser?.uid) {
+        val userId = currentUser?.uid
+        if (userId != null) {
+            isLoading = true
+            loadUserProfile(
+                userId = userId,
+                onSuccess = { profile ->
+                    userProfile = profile
+                    isLoading = false
+                },
+                onError = { exception ->
+                    isLoading = false
+                }
+            )
+
+            ReviewRepository.getReviewsByUser(
+                userId = userId,
+                onSuccess = { reviews ->
+                    totalReviews = reviews.size
+                    totalLikes = reviews.sumOf { it.likes }
+                    moviesWatched = reviews.map { it.movieId }.toSet().size
+                    averageRating = if (reviews.isNotEmpty()) {
+                        reviews.map { it.rating }.average()
+                    } else {
+                        null
+                    }
+                },
+                onError = {
+                    totalReviews = null
+                    totalLikes = null
+                    moviesWatched = null
+                    averageRating = null
+                }
+            )
+        } else {
+            isLoading = false
         }
         return
     }
@@ -69,6 +124,39 @@ fun ProfileScreen(
                         .fillMaxWidth()
                         .padding(32.dp),
                     contentAlignment = Alignment.Center
+        Modifier.fillMaxSize()
+            .padding(20.dp)
+            .verticalScroll(scrollState)
+    ) {
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else {
+            val profile = userProfile
+            val basicInfo = profile?.basicInfo ?: UserBasicInfo()
+            val profileInfo = profile?.profileInfo ?: UserProfileInfo()
+
+            Row(
+                Modifier.fillMaxSize(),
+                Arrangement.SpaceBetween,
+                Alignment.CenterVertically
+            ) {
+                AsyncImage(
+                    model = profileInfo.fotoUrl,
+                    contentDescription = "Foto de perfil",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+                IconButton(
+                    onClick = { showEditDialog = true },
+                    modifier = Modifier.size(48.dp)
                 ) {
                     CircularProgressIndicator()
                 }
@@ -92,9 +180,10 @@ fun ProfileScreen(
                         Box(contentAlignment = Alignment.Center) {
                             val initial = basicInfo.nombre.firstOrNull()?.uppercase() ?: "U"
                             Text(
-                                text = initial,
-                                fontSize = 30.sp,
-                                fontWeight = FontWeight.Bold
+                                text = (totalReviews ?: 0).toString(),
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
@@ -103,9 +192,16 @@ fun ProfileScreen(
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            imageVector = Icons.Filled.Edit,
-                            contentDescription = "Editar perfil",
-                            tint = MaterialTheme.colorScheme.primary
+                            imageVector = Icons.Filled.Favorite,
+                            contentDescription = "Reseñas",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                                text = (totalLikes ?: 0).toString(),
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.error
                         )
                     }
                 }
@@ -162,7 +258,7 @@ fun ProfileScreen(
 
                 // Géneros favoritos (estáticos por ahora)
                 Text(
-                    text = "Géneros Favoritos:",
+                    text = "Estadísticas:",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold
                     )
@@ -171,8 +267,18 @@ fun ProfileScreen(
                     modifier = Modifier.padding(12.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    listOf("Ciencia Ficción", "Thriller", "Drama", "Acción").forEach { genre ->
-                        SimpleChip(text = genre)
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = (totalReviews ?: 0).toString(),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Reseñas totales",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
                     }
                 }
 
@@ -202,6 +308,32 @@ fun ProfileScreen(
                         items(uiState.favoriteMovies) { movie ->
                             FavCard(movie, navController)
                         }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = (moviesWatched ?: 0).toString(),
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Películas vistas",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
+
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = averageRating?.let { String.format(Locale("es", "ES"), "%.1f", it) } ?: "-",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Text(
+                            text = "Nota promedio",
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
                     }
                 }
 
@@ -284,6 +416,17 @@ fun ProfileScreen(
             initialPerfilPublico = uiState.userProfile?.profileInfo?.perfilPublico ?: false,
             isLoading = uiState.isSavingProfile
         )
+fun formatDate(timestamp: Timestamp?): String {
+    if (timestamp == null) {
+        return "Fecha no disponible"
+    }
+    return try {
+        val date = timestamp.toDate()
+        val format = SimpleDateFormat("MMMM yyyy", Locale("es", "ES"))
+        val formatted = format.format(date)
+        formatted
+    } catch (e: Exception) {
+        "Fecha no disponible"
     }
 }
 

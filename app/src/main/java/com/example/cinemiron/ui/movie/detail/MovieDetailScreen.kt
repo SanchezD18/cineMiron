@@ -2,14 +2,13 @@ package com.example.cinemiron.ui.screens
 
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,12 +25,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -55,16 +54,23 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.cinemiron.core.utils.K
 import com.example.cinemiron.domain.models.MovieDetail
 import com.example.cinemiron.ui.movie.detail.FilmInfoState
 import com.example.cinemiron.ui.movie.detail.MovieDetailViewModel
+import com.example.cinemiron.ui.review.AddReviewDialog
+import com.example.cinemiron.ui.review.ReviewCard
+import com.example.cinemiron.ui.review.ReviewViewModel
 import com.example.cinemiron.ui.theme.Primary
 import androidx.compose.runtime.collectAsState
+import java.text.NumberFormat
+import java.util.Locale
 
 @Composable
 fun FilmInfoAPI(navController: NavController, modifier: Modifier = Modifier, movieId: Int? = null) {
@@ -72,11 +78,9 @@ fun FilmInfoAPI(navController: NavController, modifier: Modifier = Modifier, mov
     val filmInfoState by viewModel.filmInfoState.collectAsStateWithLifecycle()
 
     LaunchedEffect(movieId) {
-        movieId?.let { id ->
-            viewModel.fetchMovieDetail(id)
-        }
+        movieId?.let { viewModel.fetchMovieDetail(it) }
     }
-    
+
     FilmInfoContentAPI(
         modifier = modifier,
         navController = navController,
@@ -95,9 +99,7 @@ fun FilmInfoContentAPI(
     when {
         filmInfoState.isLoading && filmInfoState.movieDetail == null -> {
             Box(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
+                modifier = modifier,
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -105,9 +107,7 @@ fun FilmInfoContentAPI(
         }
         filmInfoState.error != null -> {
             Box(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
+                modifier = modifier,
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -134,17 +134,24 @@ fun TopFilmColumnAPI(
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberLazyListState()
-    val backdropUrl = if (!movieDetail.backdrop_path.isNullOrEmpty()) {
+    val backdropUrl = if (movieDetail.backdrop_path.isNotEmpty()) {
         "${K.BASE_IMAGE_URL}${movieDetail.backdrop_path}"
     } else null
-
     val backgroundColor = MaterialTheme.colorScheme.background
+
+    var showReviewDialog by remember { mutableStateOf(false) }
+    val reviewViewModel: ReviewViewModel = viewModel()
+    val reviewState by reviewViewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(movieDetail.id) {
+        reviewViewModel.loadReviewsForMovie(movieDetail.id)
+    }
 
     Column(modifier = modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(0.25f)
+                .fillMaxHeight(0.35f)
         ) {
             if (backdropUrl != null) {
                 AsyncImage(
@@ -215,21 +222,30 @@ fun TopFilmColumnAPI(
                 .weight(1f)
         ) {
             item {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 22.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "Presupuesto: ${movieDetail.budget} $",
+                        text = "${formatMoney(movieDetail.budget)} $ - Presupuesto",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
-                        text = "Recaudación: ${movieDetail.revenue} $",
+                        text = "${formatMoney(movieDetail.revenue)} $ - Recaudación",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Black
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    ProfitLossText(
+                        budget = movieDetail.budget,
+                        revenue = movieDetail.revenue
                     )
                 }
-                DescriptionRowAPI(movieDetail.overview) }
+                RatingRowAPI(movieDetail.vote_average)
+                DescriptionRowAPI(movieDetail.overview)
+            }
             item {
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 8.dp, horizontal = 22.dp),
@@ -237,7 +253,48 @@ fun TopFilmColumnAPI(
                     color = Primary
                 )
             }
-            item { RatingRowAPI(movieDetail.vote_average) }
+
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(4.dp)
+                ) {
+                    Text(
+                        text = "Últimas reseñas",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    if (reviewState.movieReviews.isEmpty()) {
+                        Text(
+                            text = "Todavía no hay reseñas para esta película.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    } else {
+                        reviewState.movieReviews
+                            .take(3)
+                            .forEach { review ->
+                                ReviewCard(
+                                    review = review,
+                                    onLikeClick = { reviewViewModel.onLikeClicked(review) }
+                                )
+                            }
+                    }
+                }
+            }
+        }
+
+        if (showReviewDialog) {
+            AddReviewDialog(
+                movieId = movieDetail.id,
+                movieTitle = movieDetail.title,
+                moviePosterPath = movieDetail.poster_path,
+                reviewViewModel = reviewViewModel,
+                onDismiss = { showReviewDialog = false }
+            )
         }
     }
 }
@@ -246,20 +303,19 @@ fun TopFilmColumnAPI(
 fun TopFilmInfoAPI(
     movieDetail: MovieDetail,
     viewModel: MovieDetailViewModel
+    onAddReviewClick: () -> Unit
 ) {
     val imageUrl = "${K.BASE_IMAGE_URL}${movieDetail.poster_path}"
     val genresText = movieDetail.genres.joinToString(", ") { it.name }
     val year = movieDetail.release_date.take(4)
     val runtimeText = "${movieDetail.runtime} mins"
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
         Row(
             Modifier
                 .fillMaxWidth()
                 .align(Alignment.BottomStart)
-                .padding(horizontal = 22.dp, vertical = 16.dp),
+                .padding(horizontal = 22.dp, vertical = 32.dp),
             verticalAlignment = Alignment.Bottom
         ) {
             Column(Modifier.weight(1f)) {
@@ -268,14 +324,17 @@ fun TopFilmInfoAPI(
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White
                 )
+                Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = "$year · $genresText",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.White.copy(alpha = 0.9f)
                 )
+                Spacer(modifier = Modifier.height(24.dp))
+
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier.padding(vertical = 4.dp)
                 ) {
                     TrailerButtonAPI(
                         movieId = movieDetail.id,
@@ -286,6 +345,22 @@ fun TopFilmInfoAPI(
                         modifier = Modifier.padding(start = 8.dp),
                         color = Color.White.copy(alpha = 0.9f)
                     )
+                }
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Button(
+                    onClick = onAddReviewClick,
+                    modifier = Modifier.height(28.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
+                ) {
+                    Icon(
+                        Icons.Default.RateReview,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Añadir Reseña", style = MaterialTheme.typography.labelSmall)
                 }
             }
             AsyncImage(
@@ -311,7 +386,6 @@ fun TrailerButtonAPI(
     Button(
         onClick = {
             viewModel.fetchTrailer(movieId) { key ->
-
                 val intent = Intent(
                     Intent.ACTION_VIEW,
                     Uri.parse("https://www.youtube.com/watch?v=$key")
@@ -331,7 +405,6 @@ fun TrailerButtonAPI(
     }
 }
 
-
 @Composable
 fun DescriptionRowAPI(description: String) {
     var expanded by remember { mutableStateOf(false) }
@@ -341,33 +414,26 @@ fun DescriptionRowAPI(description: String) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
+            text = "- Sinopsis:",
+            fontSize = 16.sp,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
             text = description.ifEmpty { "No hay descripción disponible" },
             maxLines = if (expanded) Int.MAX_VALUE else 2,
             overflow = TextOverflow.Ellipsis,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.clickable { expanded = !expanded }
         )
-        if (!expanded) {
-            Text(
-                "Ver más...",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .clickable { expanded = !expanded }
-            )
-        } else {
-            Text(
-                "Mostrar menos.",
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelSmall,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .clickable { expanded = !expanded }
-            )
-        }
+        Text(
+            text = if (expanded) "Mostrar menos." else "Ver más...",
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .clickable { expanded = !expanded }
+        )
     }
-
 }
 
 @Composable
@@ -394,11 +460,11 @@ fun RatingColumnAPI(ratingValue: Double) {
             color = MaterialTheme.colorScheme.onSurface
         )
         StarRatingBarAPI(
-            rating = ratingValue / 2.0, // Convertir de 10 a escala de 5
+            rating = ratingValue / 2.0,
             maxStars = 5,
             starSize = 40.dp,
-            activeColor = Color.Yellow,
-            inactiveColor = Color.DarkGray
+            activeColor = MaterialTheme.colorScheme.secondary,
+            inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }
@@ -422,7 +488,6 @@ fun StarRatingBarAPI(
                 rating > i - 1 -> rating - (i - 1)
                 else -> 0.0
             }
-
             StarIconAPI(
                 fillRatio = starRating,
                 size = starSize,
@@ -450,7 +515,6 @@ fun StarIconAPI(
             tint = inactiveColor,
             modifier = Modifier.size(size)
         )
-
         Icon(
             imageVector = Icons.Default.Star,
             contentDescription = null,
@@ -474,3 +538,21 @@ fun StarIconAPI(
     }
 }
 
+@Composable
+fun ProfitLossText(budget: Int, revenue: Int) {
+    val result = revenue - budget
+    val isProfit = result >= 0
+    val label = if (isProfit) "Beneficios" else "Pérdidas"
+    val color = if (isProfit) Color(0xFF2E7D32) else Color(0xFFC62828)
+
+    Text(
+        text = "${formatMoney(kotlin.math.abs(result))} $ - $label",
+        style = MaterialTheme.typography.bodyMedium,
+        color = color
+    )
+}
+
+fun formatMoney(value: Int): String {
+    val formatter = NumberFormat.getNumberInstance(Locale("es", "ES"))
+    return formatter.format(value)
+}

@@ -32,8 +32,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.cinemiron.domain.models.Movie
 import com.example.cinemiron.core.utils.K
+import com.example.cinemiron.domain.models.Movie
 
 
 @Composable
@@ -50,7 +50,7 @@ fun HomeAppBarAPI(
     viewModel: HomeViewModel
 ) {
     Scaffold(
-        modifier = modifier
+        modifier = Modifier
     ) { innerPadding ->
         ScrollContentAPI(innerPadding, navController, viewModel)
     }
@@ -62,18 +62,15 @@ fun ScrollContentAPI(
     navController: NavController,
     viewModel: HomeViewModel
 ) {
-    // Observar el estado del ViewModel
     val homeState by viewModel.homeState.collectAsStateWithLifecycle()
     val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
-            .padding(innerPadding)
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(8.dp)
             .verticalScroll(scrollState)
     ) {
-        // Mostrar indicador de carga si está cargando
         if (homeState.isLoading && homeState.discoverMovies.isEmpty() && homeState.trendingMovies.isEmpty()) {
             Box(
                 modifier = Modifier
@@ -85,7 +82,6 @@ fun ScrollContentAPI(
             }
         }
 
-        // Mostrar error si hay alguno
         homeState.error?.let { error ->
             Text(
                 text = "Error: $error",
@@ -94,7 +90,6 @@ fun ScrollContentAPI(
             )
         }
 
-        // Sección: Películas en Tendencia
         if (homeState.trendingMovies.isNotEmpty()) {
             Text(
                 text = "En Tendencia",
@@ -105,7 +100,6 @@ fun ScrollContentAPI(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // Sección: Películas Descubiertas
         if (homeState.discoverMovies.isNotEmpty()) {
             Text(
                 text = "Recomendaciones para ti",
@@ -116,7 +110,6 @@ fun ScrollContentAPI(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // Sección: Películas Descubiertas
         if (homeState.upcomingMovies.isNotEmpty()) {
             Text (
                 text = "Próximas películas",
@@ -127,7 +120,6 @@ fun ScrollContentAPI(
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        // Mostrar mensaje si no hay películas y no está cargando
         if (!homeState.isLoading && homeState.discoverMovies.isEmpty() && homeState.trendingMovies.isEmpty() && homeState.upcomingMovies.isEmpty() && homeState.error == null) {
             Text(
                 text = "No hay películas disponibles",
@@ -163,7 +155,6 @@ fun MovieItemAPI(movie: Movie, navController: NavController) {
 
             .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = {
-                // Navegar a la pantalla de detalles de la película con el ID
                 navController.navigate("filminfo/${movie.id}")
             }),
         contentScale = ContentScale.Crop

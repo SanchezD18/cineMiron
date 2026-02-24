@@ -2,7 +2,6 @@ package com.example.cinemiron.ui.search
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -47,11 +46,6 @@ import com.example.cinemiron.ui.components.UserSearchCard
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
-import kotlin.collections.forEach
-import kotlin.text.contains
-import kotlin.text.isEmpty
-import kotlin.text.isNotEmpty
-import kotlin.text.lowercase
 
 @Composable
 fun SearchScreen(navController: NavController, modifier: Modifier = Modifier) {
@@ -129,7 +123,7 @@ fun SearchAPIApp(
     }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -284,9 +278,14 @@ fun DockedSearchBarAPI(
                 onSearch = { expanded = false },
                 expanded = expanded,
                 onExpandedChange = { expanded = false },
-                placeholder = { Text("Buscar", color = Color.Gray) },
+                placeholder = {
+                    Text(
+                        "Buscar",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
                 colors = SearchBarDefaults.inputFieldColors(
-                    focusedTextColor = Color.Red
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },

@@ -1,6 +1,5 @@
 package com.example.cinemiron.ui.components
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -18,15 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.cinemiron.core.utils.K
 import com.example.cinemiron.domain.models.Movie
-import kotlin.text.take
 
 @Composable
 fun MovieCard(
@@ -40,7 +36,9 @@ fun MovieCard(
             .fillMaxWidth()
             .height(150.dp)
             .padding(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFC2CFBE))
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Row(modifier = Modifier
             .fillMaxWidth()
@@ -63,7 +61,7 @@ fun MovieCard(
                     fontSize = 15.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color(0xFF000000)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Row(
                     Modifier.fillMaxWidth()

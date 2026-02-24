@@ -11,6 +11,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -38,10 +40,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.cinemiron.data.local.repository.saveUserProfileToFirestore
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.firestore
-import com.example.cinemiron.data.local.repository.saveUserProfileToFirestore
 import kotlinx.coroutines.launch
 
 
@@ -78,7 +80,7 @@ fun RegisterScreen(navController: NavController,
     }
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -153,7 +155,7 @@ fun RegisterScreen(navController: NavController,
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
-                        imageVector = if (passwordVisible) Icons.Filled.Info else Icons.Filled.Info,
+                        imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                         contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
                     )
                 }
@@ -173,7 +175,7 @@ fun RegisterScreen(navController: NavController,
             trailingIcon = {
                 IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                     Icon(
-                        imageVector = if (confirmPasswordVisible) Icons.Filled.Info else Icons.Filled.Info,
+                        imageVector = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
                         contentDescription = if (confirmPasswordVisible) "Ocultar contraseña" else "Mostrar contraseña"
                     )
                 }
@@ -210,7 +212,7 @@ fun RegisterScreen(navController: NavController,
                                             username = username.trim(),
                                             onSuccess = {
                                                 isLoading = false
-                                                navController.navigate("home") {
+                                                navController.navigate("main") {
                                                     popUpTo("login") { inclusive = true }
                                                 }
                                             },

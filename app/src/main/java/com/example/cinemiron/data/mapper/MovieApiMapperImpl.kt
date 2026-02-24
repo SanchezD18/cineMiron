@@ -1,9 +1,9 @@
 package com.example.cinemiron.data.mapper
 
+import com.example.cinemiron.core.utils.GenreConstants
+import com.example.cinemiron.data.remote.models.MovieDto
 import com.example.cinemiron.domain.common.ApiMapper
 import com.example.cinemiron.domain.models.Movie
-import com.example.cinemiron.data.remote.models.MovieDto
-import com.example.cinemiron.core.utils.GenreConstants
 
 class MovieApiMapperImpl: ApiMapper<List<Movie>, MovieDto> {
 

@@ -2,9 +2,9 @@ package com.example.cinemiron.ui.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cinemiron.core.utils.collectAndHandle
 import com.example.cinemiron.domain.models.Movie
 import com.example.cinemiron.domain.repository.MovieRepository
-import com.example.cinemiron.core.utils.collectAndHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.text.isNotEmpty
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
