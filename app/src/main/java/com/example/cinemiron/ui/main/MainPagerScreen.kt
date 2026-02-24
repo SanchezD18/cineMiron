@@ -47,7 +47,7 @@ fun MainPagerScreen(
     )
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar(
                 modifier = Modifier.height(60.dp),
@@ -99,6 +99,7 @@ fun MainPagerScreen(
                     modifier = Modifier
                 )
                 MainPage.Review -> ReviewScreen(
+                    navController = navController,
                     modifier = Modifier
                 )
                 MainPage.Profile -> ProfileScreen(
