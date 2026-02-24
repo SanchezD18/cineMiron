@@ -11,19 +11,19 @@ import retrofit2.http.Query
 
 interface MovieApiService {
 
-    @GET(K.MOVIE_ENDPOINT)
+    @GET("${K.MOVIE_ENDPOINT}?${K.LANGUAGE}")
     suspend fun fetchDiscoverMovie(
         @Query("api_key") apiKey: String = BuildConfig.apikey,
         @Query("include_adult") includeAdult: Boolean = false
     ) : MovieDto
 
-    @GET(K.TRENDING_MOVIE_ENDPOINT)
+    @GET("${K.TRENDING_MOVIE_ENDPOINT}?${K.LANGUAGE}")
     suspend fun fetchTrendingMovie(
         @Query("api_key") apiKey: String = BuildConfig.apikey,
         @Query("include_adult") includeAdult: Boolean = false
     ) : MovieDto
 
-    @GET(K.UPCOMING_MOVIE_ENDPOINT)
+    @GET("${K.UPCOMING_MOVIE_ENDPOINT}?${K.LANGUAGE}")
     suspend fun fetchUpcomingMovie(
         @Query("api_key") apiKey: String = BuildConfig.apikey,
         @Query("include_adult") includeAdult: Boolean = false

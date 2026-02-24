@@ -40,7 +40,9 @@ fun MovieCard(
             .fillMaxWidth()
             .height(150.dp)
             .padding(4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFC2CFBE))
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Row(modifier = Modifier
             .fillMaxWidth()
@@ -63,7 +65,7 @@ fun MovieCard(
                     fontSize = 15.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    color = Color(0xFF000000)
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Row(
                     Modifier.fillMaxWidth()

@@ -32,15 +32,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.cinemiron.ui.components.BottomNavBar
 import com.example.cinemiron.ui.components.SettingsDialog
 import com.example.cinemiron.ui.auth.login.LoginScreen
 import com.example.cinemiron.ui.auth.register.RegisterScreen
 import com.example.cinemiron.ui.auth.resetpassword.ResetPasswordScreen
-import com.example.cinemiron.ui.home.HomeScreen
-import com.example.cinemiron.ui.search.SearchScreen
-import com.example.cinemiron.ui.profile.ProfileScreen
-import com.example.cinemiron.ui.review.ReviewScreen
+import com.example.cinemiron.ui.main.MainPagerScreen
 import com.example.cinemiron.ui.screens.FilmInfoAPI
 import com.example.cinemiron.ui.theme.CineMironTheme
 import com.example.cinemiron.ui.theme.ColorSchemeOption
@@ -60,12 +56,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
                 val routeTitles = mapOf(
-                    "home" to "Inicio",
-                    "search" to "Buscar",
-                    "popular" to "Populares",
+                    "main" to "Inicio",
                     "filminfo" to "Información",
-                    "review" to "Reseñas",
-                    "profile" to "Perfil",
                     "login" to "Iniciar Sesión",
                     "register" to "Registrarse"
                 )
@@ -124,24 +116,8 @@ class MainActivity : ComponentActivity() {
                                     },
                         )
                     },
-                    bottomBar = {
-                        if (!hiddenRoutes.contains(currentRoute)) {
-                            BottomNavBar(navController = navController,
-                                currentRoute)
-                        }
-                    },
-                    floatingActionButton = {
-                            FloatingActionButton(
-                                onClick = { navController.popBackStack() },
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ) {
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Añadir favorito."
-                                )
-                            }
-                        }
+                    bottomBar = {},
+                    floatingActionButton = {}
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
@@ -170,16 +146,11 @@ class MainActivity : ComponentActivity() {
                                 auth
                             )
                         }
-                        composable("home") {
-                            HomeScreen(
-                                navController,
-                                modifier = Modifier.padding(innerPadding)
-                            )
-                        }
-                        composable("search") {
-                            SearchScreen(
-                                navController,
-                                modifier = Modifier.padding(innerPadding)
+                        composable("main") {
+                            MainPagerScreen(
+                                navController = navController,
+                                modifier = Modifier.padding(innerPadding),
+                                auth = auth
                             )
                         }
                         composable(
@@ -195,18 +166,6 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 modifier = Modifier.padding(innerPadding),
                                 movieId = movieId
-                            )
-                        }
-                        composable("review") {
-                            ReviewScreen(
-                                modifier = Modifier.padding(innerPadding)
-                            )
-                        }
-                        composable("profile") {
-                            ProfileScreen(
-                                navController,
-                                modifier = Modifier.padding(innerPadding),
-                                auth = auth
                             )
                         }
                     }

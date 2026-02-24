@@ -67,9 +67,8 @@ fun ScrollContentAPI(
 
     Column(
         modifier = Modifier
-            .padding(innerPadding)
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(8.dp)
             .verticalScroll(scrollState)
     ) {
         if (homeState.isLoading && homeState.discoverMovies.isEmpty() && homeState.trendingMovies.isEmpty()) {
