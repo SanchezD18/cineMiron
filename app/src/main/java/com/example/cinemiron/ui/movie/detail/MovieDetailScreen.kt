@@ -19,16 +19,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -63,6 +68,7 @@ import com.example.cinemiron.ui.review.AddReviewDialog
 import com.example.cinemiron.ui.review.ReviewCard
 import com.example.cinemiron.ui.review.ReviewViewModel
 import com.example.cinemiron.ui.theme.Primary
+import androidx.compose.runtime.collectAsState
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -78,7 +84,8 @@ fun FilmInfoAPI(navController: NavController, modifier: Modifier = Modifier, mov
     FilmInfoContentAPI(
         modifier = modifier,
         navController = navController,
-        filmInfoState = filmInfoState
+        filmInfoState = filmInfoState,
+        viewModel = viewModel
     )
 }
 
@@ -86,7 +93,8 @@ fun FilmInfoAPI(navController: NavController, modifier: Modifier = Modifier, mov
 fun FilmInfoContentAPI(
     modifier: Modifier = Modifier,
     navController: NavController,
-    filmInfoState: FilmInfoState
+    filmInfoState: FilmInfoState,
+    viewModel: MovieDetailViewModel
 ) {
     when {
         filmInfoState.isLoading && filmInfoState.movieDetail == null -> {
@@ -111,7 +119,9 @@ fun FilmInfoContentAPI(
         filmInfoState.movieDetail != null -> {
             TopFilmColumnAPI(
                 movieDetail = filmInfoState.movieDetail!!,
-                modifier = modifier.fillMaxSize()
+                viewModel = viewModel,
+                modifier = modifier,
+
             )
         }
     }
@@ -120,6 +130,7 @@ fun FilmInfoContentAPI(
 @Composable
 fun TopFilmColumnAPI(
     movieDetail: MovieDetail,
+    viewModel : MovieDetailViewModel,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberLazyListState()
@@ -169,10 +180,39 @@ fun TopFilmColumnAPI(
                 )
             }
 
-            TopFilmInfoAPI(
-                movieDetail = movieDetail,
-                onAddReviewClick = { showReviewDialog = true }
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(
+                    onClick = { viewModel.toggleFavorite() },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                            shape = CircleShape
+                        )
+                ) {
+                    Icon(
+                        imageVector = if (viewModel.filmInfoState.collectAsState().value.isFavourite)
+                            Icons.Filled.Favorite
+                        else
+                            Icons.Outlined.Favorite,
+                        contentDescription = if (viewModel.filmInfoState.collectAsState().value.isFavourite)
+                            "Quitar de favoritos"
+                        else
+                            "Añadir a favoritos",
+                        tint = if (viewModel.filmInfoState.collectAsState().value.isFavourite)
+                            MaterialTheme.colorScheme.error
+                        else
+                            MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            TopFilmInfoAPI(movieDetail, viewModel)
         }
 
         LazyColumn(
@@ -262,6 +302,7 @@ fun TopFilmColumnAPI(
 @Composable
 fun TopFilmInfoAPI(
     movieDetail: MovieDetail,
+    viewModel: MovieDetailViewModel
     onAddReviewClick: () -> Unit
 ) {
     val imageUrl = "${K.BASE_IMAGE_URL}${movieDetail.poster_path}"
@@ -297,7 +338,7 @@ fun TopFilmInfoAPI(
                 ) {
                     TrailerButtonAPI(
                         movieId = movieDetail.id,
-                        viewModel = hiltViewModel()
+                        viewModel = viewModel
                     )
                     Text(
                         text = runtimeText,

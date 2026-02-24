@@ -173,6 +173,20 @@ class MainActivity : ComponentActivity() {
                                 movieId = movieId
                             )
                         }
+                        composable("review") {
+                            var showDialog by remember { mutableStateOf(false) }
+                            ReviewScreen(
+                                navController,
+                                modifier = Modifier.padding(innerPadding),
+                                onAddClick = { showDialog = true }
+                            )
+                        }
+                        composable("profile") {
+                            ProfileScreen(
+                                navController,
+                                modifier = Modifier.padding(innerPadding)
+                            )
+                        }
                     }
                 }
             }

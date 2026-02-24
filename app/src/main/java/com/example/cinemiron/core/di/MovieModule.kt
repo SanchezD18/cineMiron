@@ -10,7 +10,13 @@ import com.example.cinemiron.data.repository.MovieRepositoryImpl
 import com.example.cinemiron.domain.common.ApiMapper
 import com.example.cinemiron.domain.models.Movie
 import com.example.cinemiron.domain.models.MovieDetail
+import com.example.cinemiron.domain.repository.FavoritesRepositoryImpl
+import com.example.cinemiron.domain.repository.FavouriteRepository
 import com.example.cinemiron.domain.repository.MovieRepository
+import com.example.cinemiron.domain.repository.ProfileRepository
+import com.example.cinemiron.domain.repository.ProfileRepositoryImpl
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -28,6 +34,32 @@ object MovieModule {
     private val json = Json {
         coerceInputValues = true
         ignoreUnknownKeys = true
+    }
+
+
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+
+    @Provides
+    @Singleton
+    fun provideFavouriteRepository(
+        firestore: FirebaseFirestore
+    ): FavouriteRepository {
+        return FavoritesRepositoryImpl(firestore)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProfileRepository(
+        firestore: FirebaseFirestore
+    ): ProfileRepository {
+        return ProfileRepositoryImpl(firestore)
     }
 
     @Provides

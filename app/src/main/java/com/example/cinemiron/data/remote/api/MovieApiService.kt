@@ -47,4 +47,12 @@ interface MovieApiService {
     @Query("api_key") apiKey: String = BuildConfig.apikey,
     @Query("include_adult") includeAdult: Boolean = false
     ): MovieDto
+
+
+    @GET("${K.FIND_MOVIE_BY_ID}{movieId}?${K.LANGUAGE}")
+    suspend fun fetchMovieById(
+        @Path("movieId") movieId: Int,
+        @Query("api_key") apiKey: String = BuildConfig.apikey
+    ) : MovieDto
+
 }
