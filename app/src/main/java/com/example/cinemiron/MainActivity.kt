@@ -221,10 +221,11 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable("review") {
+                            var showDialog by remember { mutableStateOf(false) }
                             ReviewScreen(
                                 navController,
-                                Modifier.padding(innerPadding),
-                                onAddClick = {}
+                                modifier = Modifier.padding(innerPadding),
+                                onAddClick = { showDialog = true }
                             )
                         }
                         composable("profile") {
