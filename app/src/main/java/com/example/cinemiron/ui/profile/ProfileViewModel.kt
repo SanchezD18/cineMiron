@@ -1,5 +1,6 @@
 package com.example.cinemiron.ui.profile
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cinemiron.core.utils.Response
@@ -17,6 +18,7 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -96,22 +98,29 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 val ids = favoritesRepository.getFavouriteIds(userId)
+                Log.d("Profile", "IDs encontrados: $ids")
                 _favoriteIds.value = ids
+
                 val movies = ids.map { id ->
                     async {
                         try {
-                            val response = movieRepository.fetchMovieDetail(id).first()
-                            when (response) {
-                                is Response.Success -> response.data
-                                else -> null
-                            }
+                            // 🔥 SOLUCIÓN: Usar first { it is Response.Success }
+                            // o filtrar hasta obtener Success
+                            val response = movieRepository.fetchMovieDetail(id)
+                                .filterIsInstance<Response.Success<MovieDetail>>()
+                                .first()
+                            response.data
                         } catch (e: Exception) {
+                            Log.e("Profile", "Error cargando película $id", e)
                             null
                         }
                     }
                 }.awaitAll().filterNotNull()
+
+                Log.d("Profile", "Películas cargadas: ${movies.size}")
                 _uiState.update { it.copy(favoriteMovies = movies, isLoadingFavorites = false) }
             } catch (e: Exception) {
+                Log.e("Profile", "Error en loadFavorites", e)
                 _uiState.update { it.copy(isLoadingFavorites = false, errorMessage = e.message) }
             }
         }
