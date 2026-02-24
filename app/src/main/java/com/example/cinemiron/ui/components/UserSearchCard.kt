@@ -19,10 +19,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.cinemiron.data.local.models.local.models.UserProfile
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,7 +50,6 @@ fun UserSearchCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            // Avatar del usuario
             Surface(
                 modifier = Modifier.size(60.dp),
                 shape = CircleShape,
@@ -57,20 +59,19 @@ fun UserSearchCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
-                ) {
-                    val initial = user.basicInfo.nombre.firstOrNull()?.uppercase() ?: "U"
-                    Text(
-                        text = initial,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
+                )  {
+                    AsyncImage(
+                        model = user.profileInfo.fotoUrl,
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .size(100.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                )}
             }
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Información del usuario
             Column(
                 modifier = Modifier.weight(1f)
             ) {

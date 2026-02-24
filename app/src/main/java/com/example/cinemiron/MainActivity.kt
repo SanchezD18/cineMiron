@@ -32,14 +32,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.cinemiron.ui.components.SettingsDialog
 import com.example.cinemiron.ui.auth.login.LoginScreen
 import com.example.cinemiron.ui.auth.register.RegisterScreen
 import com.example.cinemiron.ui.auth.resetpassword.ResetPasswordScreen
-import com.example.cinemiron.ui.components.BottomNavBar
-import com.example.cinemiron.ui.components.SettingsDialog
-import com.example.cinemiron.ui.home.HomeScreen
-import com.example.cinemiron.ui.profile.ProfileScreen
-import com.example.cinemiron.ui.review.ReviewScreen
+import com.example.cinemiron.ui.main.MainPagerScreen
 import com.example.cinemiron.ui.screens.FilmInfoAPI
 import com.example.cinemiron.ui.search.SearchScreen
 import com.example.cinemiron.ui.theme.CineMironTheme
@@ -59,47 +56,27 @@ class MainActivity : ComponentActivity() {
         auth = Firebase.auth
         enableEdgeToEdge()
         setContent {
+                val routeTitles = mapOf(
+                    "main" to "Inicio",
+                    "filminfo" to "Información",
+                    "login" to "Iniciar Sesión",
+                    "register" to "Registrarse"
+                )
+                val navController = rememberNavController()
+                val startDestination = "login"
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+                val currentTitle = routeTitles[currentRoute] ?: "cineMirón"
+                val hiddenRoutes = listOf("login", "register", "resetpassword")
+                var showSettingsDialog by remember { mutableStateOf(false) }
+                var isDarkTheme by remember { mutableStateOf(false) }
+                var selectedColorScheme by remember { mutableStateOf(ColorSchemeOption.VERDE) }
 
-            val prefs = getSharedPreferences("user_prefs", MODE_PRIVATE)
-            val rememberSession = prefs.getBoolean("remember_session", false)
-
-            val startDestination =
-                if (auth.currentUser != null && rememberSession) {
-                    "home"
-                } else {
-                    "login"
-                }
-
-
-            val navController = rememberNavController()
-
-            val routeTitles = mapOf(
-                "home" to "Inicio",
-                "search" to "Buscar",
-                "popular" to "Populares",
-                "filminfo" to "Información",
-                "review" to "Reseñas",
-                "profile" to "Perfil",
-                "login" to "Iniciar Sesión",
-                "register" to "Registrarse"
-            )
-
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route
-            val currentTitle = routeTitles[currentRoute] ?: "cineMirón"
-            val hiddenRoutes = listOf("login", "register", "resetpassword")
-
-            var showSettingsDialog by remember { mutableStateOf(false) }
-            var isDarkTheme by remember { mutableStateOf(false) }
-            var selectedColorScheme by remember { mutableStateOf(ColorSchemeOption.VERDE) }
-
-            CineMironTheme(
-                darkTheme = isDarkTheme,
-                colorSchemeOption = selectedColorScheme
-            ) {
-
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
+                CineMironTheme(
+                    darkTheme = isDarkTheme,
+                    colorSchemeOption = selectedColorScheme
+                ) {
+                Scaffold(modifier = Modifier.fillMaxSize(),
                     topBar = {
                         TopAppBar(
                             title = {
@@ -147,23 +124,8 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     },
-                    bottomBar = {
-                        if (!hiddenRoutes.contains(currentRoute)) {
-                            BottomNavBar(navController = navController, currentRoute)
-                        }
-                    },
-                    floatingActionButton = {
-                        FloatingActionButton(
-                            onClick = { navController.popBackStack() },
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver"
-                            )
-                        }
-                    }
+                    bottomBar = {},
+                    floatingActionButton = {}
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
@@ -191,20 +153,11 @@ class MainActivity : ComponentActivity() {
                                 ), auth
                             )
                         }
-                        composable("home") {
-                            HomeScreen(
-                                navController,
-                                Modifier.padding(
-                                    innerPadding
-                                )
-                            )
-                        }
-                        composable("search") {
-                            SearchScreen(
-                                navController,
-                                Modifier.padding(
-                                    innerPadding
-                                )
+                        composable("main") {
+                            MainPagerScreen(
+                                navController = navController,
+                                modifier = Modifier.padding(innerPadding),
+                                auth = auth
                             )
                         }
                         composable(
@@ -218,20 +171,6 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 modifier = Modifier.padding(innerPadding),
                                 movieId = movieId
-                            )
-                        }
-                        composable("review") {
-                            ReviewScreen(
-                                navController,
-                                Modifier.padding(innerPadding),
-                                onAddClick = {}
-                            )
-                        }
-                        composable("profile") {
-                            ProfileScreen(
-                                navController,
-                                Modifier.padding(innerPadding),
-                                auth = auth
                             )
                         }
                     }

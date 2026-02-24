@@ -10,9 +10,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -127,10 +132,10 @@ fun LoginScreen(
                 VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
-                TextButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Text(
-                        text = if (passwordVisible) "Ocultar" else "Mostrar",
-                        fontSize = 12.sp
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
                     )
                 }
             },
@@ -169,15 +174,7 @@ fun LoginScreen(
                         context = navController.context,
                         onSuccess = {
                             isLoading = false
-
-                            val prefs = navController.context
-                                .getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-
-                            prefs.edit {
-                                putBoolean("remember_session", rememberCredentials)
-                            }
-
-                            navController.navigate("home") {
+                            navController.navigate("main") {
                                 popUpTo("login") { inclusive = true }
                             }
                         }

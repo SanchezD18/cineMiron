@@ -278,9 +278,14 @@ fun DockedSearchBarAPI(
                 onSearch = { expanded = false },
                 expanded = expanded,
                 onExpandedChange = { expanded = false },
-                placeholder = { Text("Buscar", color = Color.Gray) },
+                placeholder = {
+                    Text(
+                        "Buscar",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
                 colors = SearchBarDefaults.inputFieldColors(
-                    focusedTextColor = Color.Red
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface
                 )
             )
         },

@@ -60,6 +60,7 @@ import com.example.cinemiron.domain.models.MovieDetail
 import com.example.cinemiron.ui.movie.detail.FilmInfoState
 import com.example.cinemiron.ui.movie.detail.MovieDetailViewModel
 import com.example.cinemiron.ui.review.AddReviewDialog
+import com.example.cinemiron.ui.review.ReviewCard
 import com.example.cinemiron.ui.review.ReviewViewModel
 import com.example.cinemiron.ui.theme.Primary
 import java.text.NumberFormat
@@ -129,6 +130,11 @@ fun TopFilmColumnAPI(
 
     var showReviewDialog by remember { mutableStateOf(false) }
     val reviewViewModel: ReviewViewModel = viewModel()
+    val reviewState by reviewViewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(movieDetail.id) {
+        reviewViewModel.loadReviewsForMovie(movieDetail.id)
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         Box(
@@ -207,6 +213,38 @@ fun TopFilmColumnAPI(
                     color = Primary
                 )
             }
+
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 22.dp, vertical = 8.dp)
+                ) {
+                    Text(
+                        text = "Últimas reseñas",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+
+                    if (reviewState.movieReviews.isEmpty()) {
+                        Text(
+                            text = "Todavía no hay reseñas para esta película.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    } else {
+                        reviewState.movieReviews
+                            .take(3)
+                            .forEach { review ->
+                                ReviewCard(
+                                    review = review,
+                                    onLikeClick = { reviewViewModel.onLikeClicked(review) }
+                                )
+                            }
+                    }
+                }
+            }
         }
 
         if (showReviewDialog) {
@@ -281,7 +319,7 @@ fun TopFilmInfoAPI(
                         modifier = Modifier.size(14.dp)
                     )
                     Spacer(Modifier.width(4.dp))
-                    Text("Reseña", style = MaterialTheme.typography.labelSmall)
+                    Text("Añadir Reseña", style = MaterialTheme.typography.labelSmall)
                 }
             }
             AsyncImage(
@@ -384,8 +422,8 @@ fun RatingColumnAPI(ratingValue: Double) {
             rating = ratingValue / 2.0,
             maxStars = 5,
             starSize = 40.dp,
-            activeColor = Color.Yellow,
-            inactiveColor = Color.DarkGray
+            activeColor = MaterialTheme.colorScheme.secondary,
+            inactiveColor = MaterialTheme.colorScheme.onSurfaceVariant
         )
     }
 }

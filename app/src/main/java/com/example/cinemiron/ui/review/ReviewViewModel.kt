@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.update
 data class ReviewScreenState(
     val allReviews: List<Review> = emptyList(),
     val myReviews: List<Review> = emptyList(),
+    val movieReviews: List<Review> = emptyList(),
     val isLoading: Boolean = false,
     val isSaving: Boolean = false,
     val error: String? = null,
@@ -49,6 +50,19 @@ class ReviewViewModel : ViewModel() {
             userId = uid,
             onSuccess = { reviews ->
                 _state.update { it.copy(myReviews = reviews, isLoading = false) }
+            },
+            onError = { e ->
+                _state.update { it.copy(error = e.message, isLoading = false) }
+            }
+        )
+    }
+
+    fun loadReviewsForMovie(movieId: Int) {
+        _state.update { it.copy(isLoading = true, error = null) }
+        ReviewRepository.getReviewsForMovie(
+            movieId = movieId,
+            onSuccess = { reviews ->
+                _state.update { it.copy(movieReviews = reviews, isLoading = false) }
             },
             onError = { e ->
                 _state.update { it.copy(error = e.message, isLoading = false) }

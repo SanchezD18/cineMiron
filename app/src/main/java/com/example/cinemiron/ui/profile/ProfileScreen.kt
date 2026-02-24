@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -51,6 +52,7 @@ import com.example.cinemiron.R
 import com.example.cinemiron.data.local.models.local.models.UserBasicInfo
 import com.example.cinemiron.data.local.models.local.models.UserProfile
 import com.example.cinemiron.data.local.models.local.models.UserProfileInfo
+import com.example.cinemiron.data.local.repository.ReviewRepository
 import com.example.cinemiron.data.local.repository.loadUserProfile
 import com.example.cinemiron.data.local.repository.updateUserProfileInfo
 import com.example.cinemiron.ui.components.EditProfileDialog
@@ -71,6 +73,11 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
     var isSaving by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
+    var totalReviews by remember { mutableStateOf<Int?>(null) }
+    var totalLikes by remember { mutableStateOf<Int?>(null) }
+    var moviesWatched by remember { mutableStateOf<Int?>(null) }
+    var averageRating by remember { mutableStateOf<Double?>(null) }
+
     LaunchedEffect(currentUser?.uid) {
         val userId = currentUser?.uid
         if (userId != null) {
@@ -85,19 +92,40 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
                     isLoading = false
                 }
             )
+
+            ReviewRepository.getReviewsByUser(
+                userId = userId,
+                onSuccess = { reviews ->
+                    totalReviews = reviews.size
+                    totalLikes = reviews.sumOf { it.likes }
+                    moviesWatched = reviews.map { it.movieId }.toSet().size
+                    averageRating = if (reviews.isNotEmpty()) {
+                        reviews.map { it.rating }.average()
+                    } else {
+                        null
+                    }
+                },
+                onError = {
+                    totalReviews = null
+                    totalLikes = null
+                    moviesWatched = null
+                    averageRating = null
+                }
+            )
         } else {
             isLoading = false
         }
     }
 
     Column(
-        Modifier.padding(20.dp)
+        Modifier.fillMaxSize()
+            .padding(20.dp)
             .verticalScroll(scrollState)
     ) {
 
         if (isLoading) {
             Box(
-                modifier = Modifier.fillMaxWidth().padding(32.dp),
+                modifier = Modifier.fillMaxSize().padding(16.dp),
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -108,7 +136,7 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
             val profileInfo = profile?.profileInfo ?: UserProfileInfo()
 
             Row(
-                Modifier.fillMaxWidth(),
+                Modifier.fillMaxSize(),
                 Arrangement.SpaceBetween,
                 Alignment.CenterVertically
             ) {
@@ -169,7 +197,7 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
                                 modifier = Modifier.size(16.dp)
                             )
                             Text(
-                                text = "12",
+                                text = (totalReviews ?: 0).toString(),
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary
@@ -194,7 +222,7 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
-                            text = "8",
+                                text = (totalLikes ?: 0).toString(),
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.error
@@ -290,7 +318,7 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "Películas favoritas:",
+                    text = "Estadísticas:",
                     style = MaterialTheme.typography.bodyMedium.copy(
                         fontWeight = FontWeight.Bold
                     )
@@ -301,7 +329,7 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "3",
+                            text = (totalReviews ?: 0).toString(),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -315,7 +343,7 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "15",
+                            text = (moviesWatched ?: 0).toString(),
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
@@ -329,7 +357,7 @@ fun ProfileScreen(navController: NavController, modifier: Modifier, auth: Fireba
 
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "4.2",
+                            text = averageRating?.let { String.format(Locale("es", "ES"), "%.1f", it) } ?: "-",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
