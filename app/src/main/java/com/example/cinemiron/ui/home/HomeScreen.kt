@@ -32,8 +32,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.cinemiron.domain.models.Movie
 import com.example.cinemiron.core.utils.K
+import com.example.cinemiron.domain.models.Movie
 
 
 @Composable

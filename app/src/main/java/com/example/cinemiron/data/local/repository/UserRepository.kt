@@ -5,8 +5,8 @@ import com.example.cinemiron.data.local.models.local.models.UserBasicInfo
 import com.example.cinemiron.data.local.models.local.models.UserProfile
 import com.example.cinemiron.data.local.models.local.models.UserProfileInfo
 import com.example.cinemiron.data.local.models.local.models.UserSettings
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.firestore
 
 private const val TAG = "UserRepository"

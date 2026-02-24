@@ -2,9 +2,9 @@ package com.example.cinemiron.ui.movie.detail
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cinemiron.core.utils.collectAndHandle
 import com.example.cinemiron.domain.models.MovieDetail
 import com.example.cinemiron.domain.repository.MovieRepository
-import com.example.cinemiron.core.utils.collectAndHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,10 +1,10 @@
 package com.example.cinemiron.data.mapper
 
+import com.example.cinemiron.data.remote.models.MovieDetailDTO
 import com.example.cinemiron.domain.common.ApiMapper
 import com.example.cinemiron.domain.models.MovieDetail
-import com.example.cinemiron.data.remote.models.MovieDetailDTO
-import com.example.cinemiron.domain.models.Genre as DomainGenre
 import com.example.cinemiron.data.remote.models.Genre as RemoteGenre
+import com.example.cinemiron.domain.models.Genre as DomainGenre
 
 class MovieDetailApiMapperImpl: ApiMapper<MovieDetail, MovieDetailDTO> {
 
