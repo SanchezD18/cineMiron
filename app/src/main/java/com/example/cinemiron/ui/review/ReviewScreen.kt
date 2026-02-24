@@ -193,7 +193,7 @@ fun ReviewCard(review: Review, onLikeClick: () -> Unit) {
 
     Card(
         modifier = Modifier
-            .padding(horizontal = 10.dp, vertical = 6.dp)
+            .padding(horizontal = 6.dp, vertical = 6.dp)
             .fillMaxWidth(),
         shape = RoundedCornerShape(16.dp)
     ) {

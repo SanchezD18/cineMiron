@@ -91,7 +91,7 @@ fun FilmInfoContentAPI(
     when {
         filmInfoState.isLoading && filmInfoState.movieDetail == null -> {
             Box(
-                modifier = modifier.fillMaxSize().padding(16.dp),
+                modifier = modifier,
                 contentAlignment = Alignment.Center
             ) {
                 CircularProgressIndicator()
@@ -99,7 +99,7 @@ fun FilmInfoContentAPI(
         }
         filmInfoState.error != null -> {
             Box(
-                modifier = modifier.fillMaxSize().padding(16.dp),
+                modifier = modifier,
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -111,7 +111,7 @@ fun FilmInfoContentAPI(
         filmInfoState.movieDetail != null -> {
             TopFilmColumnAPI(
                 movieDetail = filmInfoState.movieDetail!!,
-                modifier = modifier
+                modifier = modifier.fillMaxSize()
             )
         }
     }
@@ -136,7 +136,7 @@ fun TopFilmColumnAPI(
         reviewViewModel.loadReviewsForMovie(movieDetail.id)
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -218,7 +218,7 @@ fun TopFilmColumnAPI(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 22.dp, vertical = 8.dp)
+                        .padding(4.dp)
                 ) {
                     Text(
                         text = "Últimas reseñas",
