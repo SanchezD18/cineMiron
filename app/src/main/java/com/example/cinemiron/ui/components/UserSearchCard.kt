@@ -105,11 +105,3 @@ fun UserSearchCard(
         }
     }
 }
-
-
-
-
-
-
-
-

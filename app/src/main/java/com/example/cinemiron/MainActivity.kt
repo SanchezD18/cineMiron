@@ -63,7 +63,18 @@ class MainActivity : ComponentActivity() {
                     "register" to "Registrarse"
                 )
                 val navController = rememberNavController()
-                val startDestination = "login"
+                val prefs = getSharedPreferences("user_prefs", MODE_PRIVATE)
+                val rememberSession = prefs.getBoolean("remember_session", false)
+                val currentUser = auth.currentUser
+
+                val startDestination = when {
+                    currentUser != null && rememberSession -> "main"
+                    currentUser != null && !rememberSession -> {
+                        auth.signOut()
+                        "login"
+                    }
+                    else -> "login"
+                }
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
                 val currentTitle = routeTitles[currentRoute] ?: "cineMirón"

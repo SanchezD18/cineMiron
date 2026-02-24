@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -388,8 +389,10 @@ fun loginWithEmail(
 }
 
 fun saveSessionPreference(context: Context, remember: Boolean) {
-    val prefs = context.getSharedPreferences("session_prefs", Context.MODE_PRIVATE)
-    prefs.edit().putBoolean("remember_session", remember).apply()
+    val prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+    prefs.edit()
+        .putBoolean("remember_session", remember)
+        .apply()
 }
 
 fun updateLastLogin(
