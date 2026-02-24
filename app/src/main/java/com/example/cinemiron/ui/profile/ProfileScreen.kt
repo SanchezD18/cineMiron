@@ -58,7 +58,7 @@ fun ProfileScreen(
     }
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(20.dp)
             .verticalScroll(scrollState)
     ) {
