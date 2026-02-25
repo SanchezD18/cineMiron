@@ -5,9 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.cinemiron.core.utils.collectAndHandle
 import com.example.cinemiron.domain.models.MovieDetail
 import com.example.cinemiron.domain.repository.MovieRepository
-import com.example.cinemiron.core.utils.collectAndHandle
 import com.example.cinemiron.domain.repository.FavouriteRepository
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -54,7 +52,6 @@ class MovieDetailViewModel @Inject constructor(
                 val isFav = favouriteRepository.isFavourite(userId, movieId)
                 _filmInfoState.update { it.copy(isFavourite = isFav) }
             } catch (e: Exception) {
-                // Ignorar error, no crítico
             }
         }
     }
@@ -71,7 +68,6 @@ class MovieDetailViewModel @Inject constructor(
                 }
                 _filmInfoState.update { it.copy(isFavourite = !it.isFavourite) }
             } catch (e: Exception) {
-                // Opcional: mostrar error
                 e.printStackTrace()
             }
         }
@@ -91,10 +87,6 @@ class MovieDetailViewModel @Inject constructor(
 
 }
 
-data class FilmInfoActions(
-    val onToggleFavorite: () -> Unit,
-    val onPlayTrailer: (Int) -> Unit
-)
 
 data class FilmInfoState(
     val movieDetail: MovieDetail? = null,

@@ -28,7 +28,6 @@ class ProfileRepositoryImpl @Inject constructor(
         return if (document.exists()) {
             UserProfile.fromDocument(document)
         } else {
-            // Si no existe, devolver un perfil vacío
             UserProfile(
                 userId = userId,
                 basicInfo = UserBasicInfo(),
@@ -68,7 +67,6 @@ class ProfileRepositoryImpl @Inject constructor(
             throw Exception("ID de usuario o nombre de usuario inválido")
         }
 
-        // Verificar si el username ya está en uso por otro usuario
         val querySnapshot = usersCollection
             .whereEqualTo("basicInfo.username", trimmedUsername)
             .get()

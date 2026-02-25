@@ -173,7 +173,6 @@ private fun getLightColorScheme(colorSchemeOption: ColorSchemeOption): ColorSche
 fun CineMironTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     colorSchemeOption: ColorSchemeOption = ColorSchemeOption.VERDE,
-    // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {

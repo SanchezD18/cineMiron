@@ -76,7 +76,6 @@ fun SearchFiltersDialog(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                // Ordenar por
                 Text(
                     text = "Ordenar por",
                     style = MaterialTheme.typography.titleMedium,
@@ -115,7 +114,6 @@ fun SearchFiltersDialog(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                // Filtrar por género
                 Text(
                     text = "Géneros",
                     style = MaterialTheme.typography.titleMedium,
@@ -144,7 +142,6 @@ fun SearchFiltersDialog(
                                     modifier = Modifier.weight(1f)
                                 )
                             }
-                            // Si hay un solo género en la fila, añadir espacio
                             if (genreRow.size == 1) {
                                 Spacer(modifier = Modifier.weight(1f))
                             }
@@ -154,7 +151,6 @@ fun SearchFiltersDialog(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                // Tipo de contenido
                 Text(
                     text = "Tipo de contenido",
                     style = MaterialTheme.typography.titleMedium,
@@ -193,7 +189,6 @@ fun SearchFiltersDialog(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
-                // Películas de amigos
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

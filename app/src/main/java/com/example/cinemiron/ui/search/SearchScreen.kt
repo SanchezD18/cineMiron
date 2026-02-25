@@ -163,7 +163,6 @@ fun SearchAPIApp(
         when (selectedTabIndex) {
             0 -> {
                 if (currentQuery.isEmpty()) {
-                    // Sin búsqueda: mostrar películas en tendencia (como en Home)
                     if (searchState.isLoadingTrending && searchState.trendingMovies.isEmpty()) {
                         Box(
                             modifier = Modifier
@@ -213,7 +212,6 @@ fun SearchAPIApp(
                         }
                     }
                 } else {
-                    // Con búsqueda: mostrar resultados
                     if (searchState.isLoading) {
                         Box(
                             modifier = Modifier

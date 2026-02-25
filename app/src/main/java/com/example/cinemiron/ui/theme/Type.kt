@@ -11,7 +11,6 @@ import com.example.cinemiron.R
 val fontOswald = FontFamily(
     Font(R.font.oswald_variablefont_wght, FontWeight.Bold))
 
-// Set of Material typography styles to start with
 val Typography = Typography(
     bodyLarge = TextStyle(
         fontFamily = FontFamily.Default,

@@ -99,7 +99,6 @@ fun SettingsDialog(
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 
-                // Escala de texto (global, excepto barra superior)
                 Text(
                     text = "Tamaño de texto",
                     style = MaterialTheme.typography.bodyLarge,

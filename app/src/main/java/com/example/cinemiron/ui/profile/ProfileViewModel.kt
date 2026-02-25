@@ -5,9 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cinemiron.core.utils.Response
 import com.example.cinemiron.data.local.models.local.models.UserProfile
-import com.example.cinemiron.domain.models.Movie
 import com.example.cinemiron.domain.models.MovieDetail
-
 import com.example.cinemiron.domain.repository.FavouriteRepository
 import com.example.cinemiron.domain.repository.MovieRepository
 import com.example.cinemiron.domain.repository.ProfileRepository
@@ -84,7 +82,7 @@ class ProfileViewModel @Inject constructor(
                     fotoUrl = fotoUrl,
                     perfilPublico = perfilPublico
                 )
-                loadUserProfile() // Recargar tras guardar
+                loadUserProfile()
                 _uiState.update { it.copy(isSavingProfile = false) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isSavingProfile = false, errorMessage = e.message) }
@@ -104,8 +102,6 @@ class ProfileViewModel @Inject constructor(
                 val movies = ids.map { id ->
                     async {
                         try {
-                            // 🔥 SOLUCIÓN: Usar first { it is Response.Success }
-                            // o filtrar hasta obtener Success
                             val response = movieRepository.fetchMovieDetail(id)
                                 .filterIsInstance<Response.Success<MovieDetail>>()
                                 .first()

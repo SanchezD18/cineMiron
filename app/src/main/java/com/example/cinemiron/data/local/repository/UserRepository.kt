@@ -43,7 +43,6 @@ fun loadUserProfile(
                 }
             } else {
                 Log.w(TAG, "Documento no existe para usuario: $userId")
-                // Crear perfil vacío si no existe
                 val emptyProfile = UserProfile(
                     userId = userId,
                     basicInfo = UserBasicInfo(),
