@@ -24,7 +24,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Star
@@ -70,6 +69,7 @@ import com.example.cinemiron.ui.review.ReviewCard
 import com.example.cinemiron.ui.review.ReviewViewModel
 import com.example.cinemiron.ui.theme.Primary
 import androidx.compose.runtime.collectAsState
+import com.google.firebase.auth.FirebaseAuth
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -119,7 +119,7 @@ fun FilmInfoContentAPI(
         }
         filmInfoState.movieDetail != null -> {
             TopFilmColumnAPI(
-                movieDetail = filmInfoState.movieDetail!!,
+                movieDetail = filmInfoState.movieDetail,
                 viewModel = viewModel,
                 modifier = modifier,
 
@@ -143,6 +143,7 @@ fun TopFilmColumnAPI(
     var showReviewDialog by remember { mutableStateOf(false) }
     val reviewViewModel: ReviewViewModel = viewModel()
     val reviewState by reviewViewModel.state.collectAsStateWithLifecycle()
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
 
     LaunchedEffect(movieDetail.id) {
         reviewViewModel.loadReviewsForMovie(movieDetail.id)
@@ -281,7 +282,10 @@ fun TopFilmColumnAPI(
                             .forEach { review ->
                                 ReviewCard(
                                     review = review,
-                                    onLikeClick = { reviewViewModel.onLikeClicked(review) }
+                                    onLikeClick = { reviewViewModel.onLikeClicked(review) },
+                                    canManage = currentUserId != null && review.userId == currentUserId,
+                                    onEdit = { /* Edición completa en pantalla de reseñas */ },
+                                    onDelete = { reviewViewModel.deleteReview(review) }
                                 )
                             }
                     }

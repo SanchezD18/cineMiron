@@ -29,6 +29,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -56,8 +57,10 @@ fun SettingsDialog(
     initialColorScheme: ColorSchemeOption = ColorSchemeOption.VERDE,
     initialNotificationsEnabled: Boolean = true,
     initialPublicProfile: Boolean = false,
+    initialTextScale: Float = 1f,
     onThemeChanged: ((Boolean) -> Unit)? = null,
     onColorSchemeChanged: ((ColorSchemeOption) -> Unit)? = null,
+    onTextScaleChanged: ((Float) -> Unit)? = null,
     onNotificationsChanged: ((Boolean) -> Unit)? = null,
     onProfileChanged: ((Boolean) -> Unit)? = null,
     onLogout: (() -> Unit)? = null
@@ -65,8 +68,8 @@ fun SettingsDialog(
     var isDarkTheme by remember { mutableStateOf(initialDarkTheme) }
     var selectedColorScheme by remember { mutableStateOf(initialColorScheme) }
     var notificationsEnabled by remember { mutableStateOf(initialNotificationsEnabled) }
-    var isPublicProfile by remember { mutableStateOf(initialPublicProfile) }
     var showColorDropdown by remember { mutableStateOf(false) }
+    var textScale by remember { mutableStateOf(initialTextScale.coerceIn(0.8f, 1.4f)) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -93,6 +96,36 @@ fun SettingsDialog(
                         onThemeChanged?.invoke(newValue)
                     }
                 )
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                // Escala de texto (global, excepto barra superior)
+                Text(
+                    text = "Tamaño de texto",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 4.dp)
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Slider(
+                        value = textScale,
+                        onValueChange = {
+                            textScale = it
+                            onTextScaleChanged?.invoke(textScale)
+                        },
+                        valueRange = 0.8f..1.4f,
+                        steps = 6,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "${(textScale * 100).toInt()}%",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
 

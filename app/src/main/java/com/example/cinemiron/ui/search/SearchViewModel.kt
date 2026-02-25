@@ -21,19 +21,19 @@ class SearchViewModel @Inject constructor(
     private val _searchState = MutableStateFlow(SearchState())
     val searchState = _searchState.asStateFlow()
 
-
-
     private val _currentQuery = MutableStateFlow("")
     val currentQuery = _currentQuery.asStateFlow()
 
     private var searchJob: Job? = null
 
+    init {
+        loadTrendingMovies()
+    }
+
     fun onSearchQueryChanged(query: String) {
-
-
         _currentQuery.value = query
 
-        if (query.isNotEmpty()){
+        if (query.isNotEmpty()) {
             searchJob = viewModelScope.launch {
                 delay(300)
                 fetchSearchMovie(query)
@@ -43,6 +43,24 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    fun loadTrendingMovies() = viewModelScope.launch {
+        repository.fetchTrendingMovie().collectAndHandle(
+            onError = { error ->
+                _searchState.update {
+                    it.copy(isLoadingTrending = false, error = error?.message)
+                }
+            },
+            onLoading = {
+                _searchState.update {
+                    it.copy(isLoadingTrending = true, error = null)
+                }
+            }
+        ) { movies ->
+            _searchState.update {
+                it.copy(isLoadingTrending = false, error = null, trendingMovies = movies)
+            }
+        }
+    }
 
     private fun fetchSearchMovie(query : String) = viewModelScope.launch {
         repository.fetchSearchMovie(query).collectAndHandle(
@@ -75,6 +93,8 @@ class SearchViewModel @Inject constructor(
 
 data class SearchState(
     val searchMovies: List<Movie> = emptyList(),
+    val trendingMovies: List<Movie> = emptyList(),
     val error: String? = null,
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val isLoadingTrending: Boolean = false
 )

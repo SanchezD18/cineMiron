@@ -98,7 +98,8 @@ class ProfileRepositoryImpl @Inject constructor(
             "tema" to "sistema",
             "notificaciones" to true,
             "colorPrimario" to "#2196F3",
-            "idioma" to "es"
+            "idioma" to "es",
+            "textScale" to 1f
         )
 
         val userData = hashMapOf<String, Any>(

@@ -34,7 +34,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -163,39 +162,92 @@ fun SearchAPIApp(
 
         when (selectedTabIndex) {
             0 -> {
-                if (searchState.isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
-                    }
-                } else if (searchState.error != null) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Error: ${searchState.error}")
+                if (currentQuery.isEmpty()) {
+                    // Sin búsqueda: mostrar películas en tendencia (como en Home)
+                    if (searchState.isLoadingTrending && searchState.trendingMovies.isEmpty()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else if (searchState.trendingMovies.isNotEmpty()) {
+                        LazyVerticalStaggeredGrid(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f),
+                            columns = StaggeredGridCells.Fixed(1),
+                            state = gridState,
+                        ) {
+                            items(searchState.trendingMovies) { movie ->
+                                MovieCard(
+                                    movie = movie,
+                                    onClick = {
+                                        navController.navigate("filminfo/${movie.id}")
+                                    }
+                                )
+                            }
+                        }
+                    } else if (searchState.error != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Error: ${searchState.error}")
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "No hay películas en tendencia",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 } else {
-                    LazyVerticalStaggeredGrid(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f),
-                        columns = StaggeredGridCells.Fixed(1),
-                        state = gridState,
-                    ) {
-                        items(searchState.searchMovies) { movie ->
-                            MovieCard(
-                                movie = movie,
-                                onClick = {
-                                    navController.navigate("filminfo/${movie.id}")
-                                }
-                            )
+                    // Con búsqueda: mostrar resultados
+                    if (searchState.isLoading) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else if (searchState.error != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("Error: ${searchState.error}")
+                        }
+                    } else {
+                        LazyVerticalStaggeredGrid(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .weight(1f),
+                            columns = StaggeredGridCells.Fixed(1),
+                            state = gridState,
+                        ) {
+                            items(searchState.searchMovies) { movie ->
+                                MovieCard(
+                                    movie = movie,
+                                    onClick = {
+                                        navController.navigate("filminfo/${movie.id}")
+                                    }
+                                )
+                            }
                         }
                     }
                 }

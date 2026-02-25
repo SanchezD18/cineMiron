@@ -81,14 +81,16 @@ data class UserSettings(
     val tema: String = "sistema",
     val notificaciones: Boolean = true,
     val colorPrimario: String = "#2196F3",
-    val idioma: String = "es"
+    val idioma: String = "es",
+    val textScale: Float = 1f
 ) {
     fun toMap(): Map<String, Any?> {
         return mapOf(
             "tema" to tema,
             "notificaciones" to notificaciones,
             "colorPrimario" to colorPrimario,
-            "idioma" to idioma
+            "idioma" to idioma,
+            "textScale" to textScale
         )
     }
 
@@ -98,7 +100,8 @@ data class UserSettings(
                 tema = map["tema"] as? String ?: "sistema",
                 notificaciones = map["notificaciones"] as? Boolean ?: true,
                 colorPrimario = map["colorPrimario"] as? String ?: "#2196F3",
-                idioma = map["idioma"] as? String ?: "es"
+                idioma = map["idioma"] as? String ?: "es",
+                textScale = (map["textScale"] as? Number)?.toFloat() ?: 1f
             )
         }
     }

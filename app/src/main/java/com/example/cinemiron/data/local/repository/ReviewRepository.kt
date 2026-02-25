@@ -101,4 +101,54 @@ object ReviewRepository {
             .addOnSuccessListener { onSuccess(newLikes) }
             .addOnFailureListener { e -> onError(e) }
     }
+
+    fun updateReview(
+        review: Review,
+        onSuccess: (Review) -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        if (review.id.isEmpty()) {
+            onError(IllegalArgumentException("ID de reseña inválido"))
+            return
+        }
+
+        val data = review.toMap().toMutableMap().apply {
+            remove("createdAt")
+        }
+
+        Firebase.firestore.collection(COLLECTION)
+            .document(review.id)
+            .update(data)
+            .addOnSuccessListener {
+                Log.d(TAG, "Reseña actualizada: ${review.id}")
+                onSuccess(review)
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error actualizando reseña: ${e.message}", e)
+                onError(e)
+            }
+    }
+
+    fun deleteReview(
+        reviewId: String,
+        onSuccess: () -> Unit,
+        onError: (Exception) -> Unit
+    ) {
+        if (reviewId.isEmpty()) {
+            onError(IllegalArgumentException("ID de reseña inválido"))
+            return
+        }
+
+        Firebase.firestore.collection(COLLECTION)
+            .document(reviewId)
+            .delete()
+            .addOnSuccessListener {
+                Log.d(TAG, "Reseña eliminada: $reviewId")
+                onSuccess()
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error eliminando reseña: ${e.message}", e)
+                onError(e)
+            }
+    }
 }

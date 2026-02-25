@@ -19,12 +19,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FloatingActionButton
@@ -56,6 +59,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.cinemiron.core.utils.K
 import com.example.cinemiron.data.local.models.local.models.Review
+import com.example.cinemiron.ui.search.SearchViewModel
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -67,6 +72,12 @@ fun ReviewScreen(
 ) {
     val reviewViewModel: ReviewViewModel = viewModel()
     val state by reviewViewModel.state.collectAsState()
+    val searchViewModel: SearchViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+    var reviewToDelete by remember { mutableStateOf<Review?>(null) }
+    var reviewToEdit by remember { mutableStateOf<Review?>(null) }
 
     var selectedFilter by remember { mutableStateOf("Todas") }
     var showAddDialog by remember { mutableStateOf(false) }
@@ -90,7 +101,8 @@ fun ReviewScreen(
             FloatingActionButton(
                 onClick = { showAddDialog = true },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(bottom = 72.dp)
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
@@ -152,7 +164,10 @@ fun ReviewScreen(
                         items(displayedReviews, key = { it.id }) { review ->
                             ReviewCard(
                                 review = review,
-                                onLikeClick = { reviewViewModel.onLikeClicked(review) }
+                                onLikeClick = { reviewViewModel.onLikeClicked(review) },
+                                canManage = currentUserId != null && review.userId == currentUserId,
+                                onEdit = { reviewToEdit = review },
+                                onDelete = { reviewToDelete = review }
                             )
                         }
                     }
@@ -164,7 +179,40 @@ fun ReviewScreen(
     if (showAddDialog) {
         AddQuickReviewDialog(
             reviewViewModel = reviewViewModel,
+            searchViewModel = searchViewModel,
             onDismiss = { showAddDialog = false }
+        )
+    }
+
+    reviewToDelete?.let { toDelete ->
+        AlertDialog(
+            onDismissRequest = { reviewToDelete = null },
+            title = { Text("Eliminar reseña") },
+            text = { Text("¿Seguro que quieres eliminar esta reseña? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        reviewViewModel.deleteReview(toDelete) {
+                            reviewToDelete = null
+                        }
+                    }
+                ) {
+                    Text("Eliminar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { reviewToDelete = null }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    reviewToEdit?.let { toEdit ->
+        EditReviewDialog(
+            review = toEdit,
+            reviewViewModel = reviewViewModel,
+            onDismiss = { reviewToEdit = null }
         )
     }
 }
@@ -184,8 +232,15 @@ fun ReviewFilter(selected: String, onSelectedChange: (String) -> Unit) {
 }
 
 @Composable
-fun ReviewCard(review: Review, onLikeClick: () -> Unit) {
+fun ReviewCard(
+    review: Review,
+    onLikeClick: () -> Unit,
+    canManage: Boolean = false,
+    onEdit: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null
+) {
     var revealSpoiler by remember { mutableStateOf(false) }
+    var menuExpanded by remember { mutableStateOf(false) }
 
     val dateText = review.createdAt?.let {
         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(it.toDate())
@@ -212,12 +267,48 @@ fun ReviewCard(review: Review, onLikeClick: () -> Unit) {
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                Text(review.movieTitle, fontWeight = FontWeight.Bold)
-                Text(
-                    "${review.userName} · $dateText",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(review.movieTitle, fontWeight = FontWeight.Bold)
+                        Text(
+                            "${review.userName} · $dateText",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    if (canManage) {
+                        Box {
+                            IconButton(onClick = { menuExpanded = true }) {
+                                Icon(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = "Opciones de reseña"
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = menuExpanded,
+                                onDismissRequest = { menuExpanded = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text("Editar") },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onEdit?.invoke()
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("Eliminar") },
+                                    onClick = {
+                                        menuExpanded = false
+                                        onDelete?.invoke()
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Spacer(Modifier.height(4.dp))
 
@@ -398,11 +489,120 @@ fun AddReviewDialog(
 }
 
 @Composable
-fun AddQuickReviewDialog(
+fun EditReviewDialog(
+    review: Review,
     reviewViewModel: ReviewViewModel,
     onDismiss: () -> Unit
 ) {
     val state by reviewViewModel.state.collectAsState()
+
+    var rating by remember(review.id) { mutableStateOf(review.rating.toFloat()) }
+    var reviewTitle by remember(review.id) { mutableStateOf(review.reviewTitle) }
+    var reviewDesc by remember(review.id) { mutableStateOf(review.reviewDescription) }
+    var spoiler by remember(review.id) { mutableStateOf(review.hasSpoiler) }
+
+    val isFormValid by remember {
+        derivedStateOf {
+            reviewTitle.isNotBlank() && reviewDesc.isNotBlank()
+        }
+    }
+
+    LaunchedEffect(state.saveSuccess) {
+        if (state.saveSuccess) {
+            reviewViewModel.clearSaveSuccess()
+            onDismiss()
+        }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar reseña", style = MaterialTheme.typography.titleMedium) },
+        text = {
+            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                Text(
+                    text = review.movieTitle,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text("Valoración: ${rating.toInt()}/10")
+                Slider(
+                    value = rating,
+                    onValueChange = { rating = it },
+                    valueRange = 0f..10f,
+                    steps = 9
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = reviewTitle,
+                    onValueChange = { reviewTitle = it },
+                    label = { Text("Título de la reseña") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = reviewDesc,
+                    onValueChange = { reviewDesc = it },
+                    label = { Text("Tu opinión") },
+                    minLines = 3,
+                    maxLines = 6,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(4.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = spoiler,
+                        onCheckedChange = { spoiler = it }
+                    )
+                    Text("Contiene spoilers", style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    reviewViewModel.updateReview(
+                        original = review,
+                        rating = rating.toInt(),
+                        reviewTitle = reviewTitle,
+                        reviewDescription = reviewDesc,
+                        hasSpoiler = spoiler
+                    )
+                },
+                enabled = isFormValid && !state.isSaving
+            ) {
+                if (state.isSaving) {
+                    CircularProgressIndicator(modifier = Modifier.size(16.dp))
+                } else {
+                    Text("Guardar")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+
+@Composable
+fun AddQuickReviewDialog(
+    reviewViewModel: ReviewViewModel,
+    searchViewModel: SearchViewModel,
+    onDismiss: () -> Unit
+) {
+    val state by reviewViewModel.state.collectAsState()
+    val searchState by searchViewModel.searchState.collectAsState()
     var movieIdText by remember { mutableStateOf("") }
     var movieTitle by remember { mutableStateOf("") }
     var moviePosterPath by remember { mutableStateOf("") }
@@ -431,13 +631,41 @@ fun AddQuickReviewDialog(
         },
         text = {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                OutlinedTextField(
-                    value = movieTitle,
-                    onValueChange = { movieTitle = it },
-                    label = { Text("Título de la película") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                var suggestionsExpanded by remember { mutableStateOf(false) }
+
+                Box {
+                    OutlinedTextField(
+                        value = movieTitle,
+                        onValueChange = {
+                            movieTitle = it
+                            searchViewModel.onSearchQueryChanged(it)
+                            suggestionsExpanded = it.isNotBlank()
+                        },
+                        label = { Text("Título de la película") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    val suggestions = searchState.searchMovies
+                    DropdownMenu(
+                        expanded = suggestionsExpanded && suggestions.isNotEmpty(),
+                        onDismissRequest = { suggestionsExpanded = false },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ) {
+                        suggestions.take(10).forEach { movie ->
+                            DropdownMenuItem(
+                                text = { Text(movie.title) },
+                                onClick = {
+                                    movieTitle = movie.title
+                                    movieIdText = movie.id.toString()
+                                    moviePosterPath = movie.posterPath
+                                    suggestionsExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
 
                 Spacer(Modifier.height(8.dp))
 

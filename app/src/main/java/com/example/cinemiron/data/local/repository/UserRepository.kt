@@ -155,7 +155,8 @@ fun saveUserProfileToFirestore(
                 "tema" to "sistema",
                 "notificaciones" to true,
                 "colorPrimario" to "#2196F3",
-                "idioma" to "es"
+                "idioma" to "es",
+                "textScale" to 1f
             )
 
             val userData = hashMapOf<String, Any>(
@@ -192,6 +193,40 @@ fun saveUserProfileToFirestore(
             } else {
                 onError(e)
             }
+        }
+}
+
+fun updateUserSettings(
+    userId: String,
+    tema: String,
+    colorPrimario: String,
+    textScale: Float,
+    notificaciones: Boolean,
+    onSuccess: () -> Unit = {},
+    onError: (Exception) -> Unit = {}
+) {
+    if (userId.isEmpty()) {
+        onError(Exception("ID de usuario inválido"))
+        return
+    }
+
+    val updates = hashMapOf<String, Any>(
+        "settings.tema" to tema,
+        "settings.colorPrimario" to colorPrimario,
+        "settings.textScale" to textScale,
+        "settings.notificaciones" to notificaciones
+    )
+
+    Firebase.firestore.collection("users")
+        .document(userId)
+        .update(updates)
+        .addOnSuccessListener {
+            Log.d(TAG, "✅ UserSettings actualizados para: $userId (tema=$tema, colorPrimario=$colorPrimario)")
+            onSuccess()
+        }
+        .addOnFailureListener { e ->
+            Log.e(TAG, "❌ Error actualizando UserSettings para $userId: ${e.message}", e)
+            onError(e)
         }
 }
 

@@ -1,8 +1,8 @@
 package com.example.cinemiron.ui.main
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
@@ -92,7 +92,7 @@ fun MainPagerScreen(
             when (pages[page]) {
                 MainPage.Home -> HomeScreen(
                     navController = navController,
-                    modifier = Modifier
+                    modifier = Modifier.padding(innerPadding)
                 )
                 MainPage.Search -> SearchScreen(
                     navController = navController,

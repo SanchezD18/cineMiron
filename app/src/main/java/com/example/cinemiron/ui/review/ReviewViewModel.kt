@@ -3,7 +3,9 @@ package com.example.cinemiron.ui.review
 import androidx.lifecycle.ViewModel
 import com.example.cinemiron.data.local.models.local.models.Review
 import com.example.cinemiron.data.local.repository.ReviewRepository
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -26,10 +28,25 @@ class ReviewViewModel : ViewModel() {
     private val currentUserId: String?
         get() = FirebaseAuth.getInstance().currentUser?.uid
 
+    private var cachedUserName: String? = null
+
+    init {
+        loadUserName()
+    }
+
+    private fun loadUserName() {
+        val uid = currentUserId ?: return
+        Firebase.firestore.collection("users").document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+                @Suppress("UNCHECKED_CAST")
+                val basicInfo = document.data?.get("basicInfo") as? Map<String, Any?>
+                cachedUserName = basicInfo?.get("username") as? String
+            }
+    }
+
     private val currentUserName: String
-        get() = FirebaseAuth.getInstance().currentUser?.displayName
-            ?: FirebaseAuth.getInstance().currentUser?.email?.substringBefore("@")
-            ?: "Usuario"
+        get() = cachedUserName ?: "Usuario"
 
     fun loadAllReviews() {
         _state.update { it.copy(isLoading = true, error = null) }
@@ -129,5 +146,62 @@ class ReviewViewModel : ViewModel() {
 
     fun clearSaveSuccess() {
         _state.update { it.copy(saveSuccess = false) }
+    }
+
+    fun updateReview(
+        original: Review,
+        rating: Int,
+        reviewTitle: String,
+        reviewDescription: String,
+        hasSpoiler: Boolean
+    ) {
+        val updated = original.copy(
+            rating = rating,
+            reviewTitle = reviewTitle,
+            reviewDescription = reviewDescription,
+            hasSpoiler = hasSpoiler
+        )
+
+        _state.update { it.copy(isSaving = true, saveSuccess = false, error = null) }
+
+        ReviewRepository.updateReview(
+            review = updated,
+            onSuccess = { saved ->
+                _state.update { current ->
+                    current.copy(
+                        isSaving = false,
+                        saveSuccess = true,
+                        allReviews = current.allReviews.map { if (it.id == saved.id) saved else it },
+                        myReviews = current.myReviews.map { if (it.id == saved.id) saved else it },
+                        movieReviews = current.movieReviews.map { if (it.id == saved.id) saved else it }
+                    )
+                }
+            },
+            onError = { e ->
+                _state.update { it.copy(isSaving = false, error = e.message) }
+            }
+        )
+    }
+
+    fun deleteReview(review: Review, onFinished: () -> Unit = {}) {
+        if (review.id.isEmpty()) return
+
+        ReviewRepository.deleteReview(
+            reviewId = review.id,
+            onSuccess = {
+                _state.update { current ->
+                    current.copy(
+                        allReviews = current.allReviews.filterNot { it.id == review.id },
+                        myReviews = current.myReviews.filterNot { it.id == review.id },
+                        movieReviews = current.movieReviews.filterNot { it.id == review.id }
+                    )
+                }
+                onFinished()
+            },
+            onError = { e ->
+                _state.update { it.copy(error = e.message) }
+                onFinished()
+            }
+        )
     }
 }
