@@ -261,7 +261,7 @@ fun TopFilmColumnAPI(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(4.dp)
+                        .padding(horizontal = 22.dp, vertical = 4.dp)
                 ) {
                     Text(
                         text = "Últimas reseñas",

@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
                 val routeTitles = mapOf(
-                    "main" to "Inicio",
+                    "main" to "cineMirón",
                     "filminfo" to "Información",
                     "login" to "Iniciar Sesión",
                     "register" to "Registrarse"
